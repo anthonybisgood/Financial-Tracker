@@ -6,6 +6,7 @@ class BankInterface(object):
     def __init__(self):
         # create link to bank account and login, get account info
         self.dailySpent = None
+        self.lastPaycheck = None
         pass
 
     def getDailySpent(self) -> float:
@@ -17,17 +18,18 @@ class BankInterface(object):
 
     def fetchDailySpent(self):
         # Get daily spent from bank account
-        return 60.0
+        return 50.0
 
     def getLastPaycheck(self) -> float:
+        if not self.lastPaycheck:
+            self.lastPaycheck = self.fetchLastPaycheck()
+            return self.lastPaycheck
         # Do This later, This would be the biweekly paycheck amount
-        return 1800
+        return self.lastPaycheck
 
-    def weeklyBudget(self) -> float:
-        return self.getLastPaycheck() / 4
-
-    def getMonthlyBudget(self) -> float:
-        return self.getLastPaycheck()
+    def fetchLastPaycheck(self):
+        # Get last paycheck from bank account
+        return 1648.55
 
 
 class CSVInterface(object):
@@ -45,7 +47,7 @@ class CSVInterface(object):
         csvWrite: csv = open("./data.csv", "a", newline="")
         amountSpent: float = self.bankInterface.getDailySpent()
         csvWriter: csv.writer = csv.writer(csvWrite)
-        dailyBudget: float = self.bankInterface.weeklyBudget() / 7
+        dailyBudget: float = round(self.bankInterface.getLastPaycheck() / 28, 2)
         csvWriter.writerow([str(self.todaysDate), str(amountSpent), dailyBudget])
         csvWrite.close()
 
@@ -88,6 +90,8 @@ class CSVInterface(object):
             self.getYearlySpent()
         return self.yearlyEarned
 
+    # budget for the month or year is money earned * projected earnings
+
     def getSpentEarnedFromXDaysAgo(self, daysAgo: int) -> list:
         """Gets the amount spent from x days ago (exclusive) to today (inclusive)
 
@@ -99,10 +103,33 @@ class CSVInterface(object):
         """
         currSpent: float = 0
         currEarned: float = 0
-        daysAgoDate: datetime = self.todaysDate - timedelta(days=daysAgo)
         datesFromDaysAgo: list = []
-        for i in range(1, daysAgo + 1):
-            datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i)))
+        todaysWeekDay = int(self.todaysDate.strftime("%w"))
+        daysAgoDate: datetime = self.todaysDate - timedelta(days=daysAgo)
+
+        if daysAgo == 7:
+            # gets nearest past sunday
+            daysAgoDate = self.todaysDate - timedelta(
+                days=int(self.todaysDate.strftime("%w"))
+            )
+            for i in range(0, todaysWeekDay + 1):
+                datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i)))
+        if daysAgo == 30:
+            # gets nearest past first of the month
+            daysAgoDate = self.todaysDate - timedelta(
+                days=int(self.todaysDate.strftime("%d")) - 1
+            )
+            for i in range(0, int(self.todaysDate.strftime("%d"))):
+                datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i)))
+        if daysAgo == 365:
+            # gets nearest past first of the year
+            daysAgoDate = self.todaysDate - timedelta(
+                days=int(self.todaysDate.strftime("%j")) - 1
+            )
+            for i in range(0, int(self.todaysDate.strftime("%j"))):
+                datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i)))
+
+        # print(datesFromDaysAgo)
         csvRead: csv = open("./data.csv", "r")
         csvReader: csv.reader = csv.reader(csvRead)
         for row in csvReader:
@@ -119,28 +146,63 @@ class ClientIO(object):
         self.csvInterface: CSVInterface = csvInterface
 
     def percentOfWeeklyBudgetSpent(self) -> float:
-        weeklyBudget: float = self.bankInterface.weeklyBudget()
+        weeklyBudget: float = self.csvInterface.getWeeklyEarned()
+        print(weeklyBudget, self.csvInterface.getWeeklySpent())
         return self.csvInterface.getWeeklySpent() / weeklyBudget * 100
 
     def percentOfMonthlyBudgetSpent(self) -> float:
-        monthlyBudget: float = self.bankInterface.getMonthlyBudget()
+        monthlyBudget: float = self.csvInterface.getMonthlyEarned()
         return self.csvInterface.getMonthlySpent() / monthlyBudget * 100
 
     def percentOfYearlyBudgetSpent(self) -> float:
-        yearlyBudget: float = self.bankInterface.getMonthlyBudget() * 12
+        yearlyBudget: float = self.csvInterface.getYearlyEarned()
         return self.csvInterface.getYearlySpent() / yearlyBudget * 100
 
-    def getMoneySpentToday(self) -> float:
-        return self.bankInterface.getDailySpent()
+    def output(self):
+        print("Money spent today: " + str(self.bankInterface.getDailySpent()))
+        print(
+            "Percent of weekly budget spent: " + str(self.percentOfWeeklyBudgetSpent())
+        )
+        print(
+            "Percent of monthly budget spent: "
+            + str(self.percentOfMonthlyBudgetSpent())
+        )
+        print(
+            "Percent of yearly budget spent: " + str(self.percentOfYearlyBudgetSpent())
+        )
+
+    def sendEmail(self):
+        pass
 
 
+# TODO: set up EC2 instance
+# TODO: set up cron job to run this script every day
+# TODO: set up email service to send email to user
+
+
+def populateCSV():
+    csvWrite: csv = open("./data.csv", "w", newline="")
+    csvWriter: csv.writer = csv.writer(csvWrite)
+    csvWriter.writerow(["Date", "Amount Spent", "Daily Budget"])
+    days = 30
+    startDate: datetime = datetime.date(datetime.now() - timedelta(days=days))
+    import random
+
+    for i in range(1, days + 1):
+        csvWriter.writerow(
+            [str(startDate + timedelta(days=i)), random.randint(20, 75), 58.88]
+        )
+
+
+# populateCSV()
 def __main__():
     bankInterface = BankInterface()
     csvInterface = CSVInterface(bankInterface)
     csvInterface.addDailySpent()
+    csvInterface.getYearlySpent()
     clientIO: ClientIO = ClientIO(bankInterface, csvInterface)
-    clientIO.getMoneySpentToday()
-    print(csvInterface.getMonthlyEarned())
+    # clientIO.percentOfWeeklyBudgetSpent()
+    # clientIO.output()
 
 
 __main__()
