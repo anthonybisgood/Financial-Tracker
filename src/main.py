@@ -103,17 +103,34 @@ class CSVInterface(object):
         """
         currSpent: float = 0
         currEarned: float = 0
-        datesFromDaysAgo: list = []
-        todaysWeekDay = int(self.todaysDate.strftime("%w"))
-        daysAgoDate: datetime = self.todaysDate - timedelta(days=daysAgo)
+        datesFromDaysAgo: list = self.getDays(daysAgo)                   
+        csvRead: csv = open("./data.csv", "r")
+        csvReader: csv.reader = csv.reader(csvRead)
+        for row in csvReader:
+            if row and row[0] in datesFromDaysAgo:
+                currSpent += float(row[1])
+                currEarned += float(row[2])
+        csvRead.close()
+        return [currSpent, currEarned]
+    
+    def getDays(self, daysAgo: int) -> list:
+        """Gets the days spent from x days ago, to today. Starts from 
+            nearest sunday, first of the month, or first of the year
 
+        Args:
+            daysAgo (int): The number of days ago to start counting from
+
+        Returns:
+            list: The list of dates from x days ago to today
+        """
+        datesFromDaysAgo: list = []
         if daysAgo == 7:
             # gets nearest past sunday
             daysAgoDate = self.todaysDate - timedelta(
                 days=int(self.todaysDate.strftime("%w"))
             )
-            for i in range(0, todaysWeekDay + 1):
-                datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i)))
+            for i in range(0, int(self.todaysDate.strftime("%w"))+1):
+                datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i)))           
         if daysAgo == 30:
             # gets nearest past first of the month
             daysAgoDate = self.todaysDate - timedelta(
@@ -127,18 +144,8 @@ class CSVInterface(object):
                 days=int(self.todaysDate.strftime("%j")) - 1
             )
             for i in range(0, int(self.todaysDate.strftime("%j"))):
-                datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i)))
-
-        # print(datesFromDaysAgo)
-        csvRead: csv = open("./data.csv", "r")
-        csvReader: csv.reader = csv.reader(csvRead)
-        for row in csvReader:
-            if row and row[0] in datesFromDaysAgo:
-                currSpent += float(row[1])
-                currEarned += float(row[2])
-        csvRead.close()
-        return [currSpent, currEarned]
-
+                datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i))) 
+        return datesFromDaysAgo
 
 class ClientIO(object):
     def __init__(self, bankInterface: BankInterface, csvInterface: CSVInterface):
@@ -199,7 +206,10 @@ def __main__():
     bankInterface = BankInterface()
     csvInterface = CSVInterface(bankInterface)
     csvInterface.addDailySpent()
+    csvInterface.getWeeklySpent()
+    csvInterface.getMonthlySpent()
     csvInterface.getYearlySpent()
+    
     clientIO: ClientIO = ClientIO(bankInterface, csvInterface)
     # clientIO.percentOfWeeklyBudgetSpent()
     # clientIO.output()
