@@ -1,5 +1,8 @@
 import csv
 from datetime import datetime, timedelta
+import calendar
+
+PERCENT_SAVINGS = 0.5
 
 
 class BankInterface(object):
@@ -44,7 +47,7 @@ class CSVInterface(object):
         self.yearlyEarned = None
 
     def addDailySpent(self):
-        csvWrite: csv = open("./data.csv", "a", newline="")
+        csvWrite: csv = open("./src/data.csv", "a", newline="")
         amountSpent: float = self.bankInterface.getDailySpent()
         csvWriter: csv.writer = csv.writer(csvWrite)
         dailyBudget: float = round(self.bankInterface.getLastPaycheck() / 28, 2)
@@ -53,7 +56,7 @@ class CSVInterface(object):
 
     def getWeeklySpent(self) -> float:
         if not self.weeklySpent:
-            SpentEarned: list = self.getSpentEarnedFromXDaysAgo(7)
+            SpentEarned: list = self.getExpenses_Budget(7)
             self.weeklySpent = SpentEarned[0]
             self.weeklyEarned = SpentEarned[1]
             return self.weeklySpent
@@ -61,7 +64,7 @@ class CSVInterface(object):
 
     def getMonthlySpent(self) -> float:
         if not self.monthlySpent:
-            SpentEarned: list = self.getSpentEarnedFromXDaysAgo(30)
+            SpentEarned: list = self.getExpenses_Budget(30)
             self.monthlySpent = SpentEarned[0]
             self.monthlyEarned = SpentEarned[1]
             return self.weeklySpent
@@ -69,7 +72,7 @@ class CSVInterface(object):
 
     def getYearlySpent(self) -> float:
         if not self.yearlySpent:
-            SpentEarned: list = self.getSpentEarnedFromXDaysAgo(365)
+            SpentEarned: list = self.getExpenses_Budget(365)
             self.yearlySpent = SpentEarned[0]
             self.yearlyEarned = SpentEarned[1]
             return self.yearlySpent
@@ -92,60 +95,75 @@ class CSVInterface(object):
 
     # budget for the month or year is money earned * projected earnings
 
-    def getSpentEarnedFromXDaysAgo(self, daysAgo: int) -> list:
-        """Gets the amount spent from x days ago (exclusive) to today (inclusive)
+    def getExpenses_Budget(self, timeframe: int) -> list:
+        """Calculates the budget
 
         Args:
-            daysAgo (int): The number of days ago to start counting from
+            timeframe (int): timescale for expenses and budget (7,30,365)
 
         Returns:
-            float: The amount spent from x days ago to today
+            list:   [0] The amount spent from x days ago to today
+                    [1] The budget for the timescale
         """
         currSpent: float = 0
-        currEarned: float = 0
-        datesFromDaysAgo: list = self.getDays(daysAgo)                   
-        csvRead: csv = open("./data.csv", "r")
+        budget: float = 0
+        datesFromTimeframe: list = self.getDays(timeframe)
+        csvRead: csv = open("./src/data.csv", "r")
         csvReader: csv.reader = csv.reader(csvRead)
         for row in csvReader:
-            if row and row[0] in datesFromDaysAgo:
+            if row and row[0] in datesFromTimeframe:
                 currSpent += float(row[1])
-                currEarned += float(row[2])
+                budget += float(row[2])
         csvRead.close()
-        return [currSpent, currEarned]
-    
-    def getDays(self, daysAgo: int) -> list:
-        """Gets the days spent from x days ago, to today. Starts from 
+
+        projectedEarnings = self.getProjectedEarnings(timeframe)
+        budget = projectedEarnings + budget
+        return [currSpent, budget]
+
+    def getProjectedEarnings(self, timeline: int) -> float:
+        daysLeft: int = 0
+        if timeline == 7:
+            daysLeft = 7 - int(self.todaysDate.strftime("%w")) - 1
+        if timeline == 30:
+            daysLeft = 30 - int(self.todaysDate.strftime("%d"))
+        if timeline == 365:
+            daysLeft = 365 - int(self.todaysDate.strftime("%j"))
+        return round(daysLeft * (self.bankInterface.getLastPaycheck() / 28), 2)
+
+    def getDays(self, timeframe: int) -> list:
+        """Gets the days spent from x days ago, to today. Starts from
             nearest sunday, first of the month, or first of the year
 
         Args:
-            daysAgo (int): The number of days ago to start counting from
+            timeframe (int): The number of days ago to start counting from
 
         Returns:
             list: The list of dates from x days ago to today
         """
-        datesFromDaysAgo: list = []
-        if daysAgo == 7:
+        datesFromTimeframe: list = []
+        if timeframe == 7:
             # gets nearest past sunday
-            daysAgoDate = self.todaysDate - timedelta(
+            timeframeDate = self.todaysDate - timedelta(
                 days=int(self.todaysDate.strftime("%w"))
             )
-            for i in range(0, int(self.todaysDate.strftime("%w"))+1):
-                datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i)))           
-        if daysAgo == 30:
+            for i in range(0, int(self.todaysDate.strftime("%w")) + 1):
+                datesFromTimeframe.append(str(timeframeDate + timedelta(days=i)))
+        if timeframe == 30:
             # gets nearest past first of the month
-            daysAgoDate = self.todaysDate - timedelta(
+            timeframeDate = self.todaysDate - timedelta(
                 days=int(self.todaysDate.strftime("%d")) - 1
             )
             for i in range(0, int(self.todaysDate.strftime("%d"))):
-                datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i)))
-        if daysAgo == 365:
+                datesFromTimeframe.append(str(timeframeDate + timedelta(days=i)))
+        if timeframe == 365:
             # gets nearest past first of the year
-            daysAgoDate = self.todaysDate - timedelta(
+            timeframeDate = self.todaysDate - timedelta(
                 days=int(self.todaysDate.strftime("%j")) - 1
             )
             for i in range(0, int(self.todaysDate.strftime("%j"))):
-                datesFromDaysAgo.append(str(daysAgoDate + timedelta(days=i))) 
-        return datesFromDaysAgo
+                datesFromTimeframe.append(str(timeframeDate + timedelta(days=i)))
+        return datesFromTimeframe
+
 
 class ClientIO(object):
     def __init__(self, bankInterface: BankInterface, csvInterface: CSVInterface):
@@ -154,16 +172,15 @@ class ClientIO(object):
 
     def percentOfWeeklyBudgetSpent(self) -> float:
         weeklyBudget: float = self.csvInterface.getWeeklyEarned()
-        print(weeklyBudget, self.csvInterface.getWeeklySpent())
-        return self.csvInterface.getWeeklySpent() / weeklyBudget * 100
+        return round(self.csvInterface.getWeeklySpent() / weeklyBudget * 100, 2)
 
     def percentOfMonthlyBudgetSpent(self) -> float:
         monthlyBudget: float = self.csvInterface.getMonthlyEarned()
-        return self.csvInterface.getMonthlySpent() / monthlyBudget * 100
+        return round(self.csvInterface.getMonthlySpent() / monthlyBudget * 100, 2)
 
     def percentOfYearlyBudgetSpent(self) -> float:
         yearlyBudget: float = self.csvInterface.getYearlyEarned()
-        return self.csvInterface.getYearlySpent() / yearlyBudget * 100
+        return round(self.csvInterface.getYearlySpent() / yearlyBudget * 100, 2)
 
     def output(self):
         print("Money spent today: " + str(self.bankInterface.getDailySpent()))
@@ -188,20 +205,21 @@ class ClientIO(object):
 
 
 def populateCSV():
-    csvWrite: csv = open("./data.csv", "w", newline="")
+    csvWrite: csv = open("./src/data.csv", "w", newline="")
     csvWriter: csv.writer = csv.writer(csvWrite)
     csvWriter.writerow(["Date", "Amount Spent", "Daily Budget"])
-    days = 30
+    days = 15
     startDate: datetime = datetime.date(datetime.now() - timedelta(days=days))
     import random
-
-    for i in range(1, days + 1):
+    for i in range(1, days):
         csvWriter.writerow(
             [str(startDate + timedelta(days=i)), random.randint(20, 75), 58.88]
         )
 
 
-# populateCSV()
+#  populateCSV()
+
+
 def __main__():
     bankInterface = BankInterface()
     csvInterface = CSVInterface(bankInterface)
@@ -209,10 +227,9 @@ def __main__():
     csvInterface.getWeeklySpent()
     csvInterface.getMonthlySpent()
     csvInterface.getYearlySpent()
-    
+
     clientIO: ClientIO = ClientIO(bankInterface, csvInterface)
-    # clientIO.percentOfWeeklyBudgetSpent()
-    # clientIO.output()
+    clientIO.output()
 
 
 __main__()
