@@ -1,2 +1,4 @@
 Tracks daily expenses from Chase app and compares them to the budget
 Does it by monthly budget
+
+pip3 install -r requirements.txt
