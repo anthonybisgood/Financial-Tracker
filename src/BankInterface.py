@@ -1,60 +1,57 @@
 import os
-import datetime as dt
-import plaid
-from plaid.api import plaid_api
-from dotenv import load_dotenv
+from datetime import datetime, timedelta
+import mintapi
 from pathlib import Path
+import pandas as pd
+
 
 class BankInterface(object):
     def __init__(self):
         # create link to bank account and login, get account info
         self.dailySpent = None
         self.lastPaycheck = None
+        self.mintConn = MintConnection()
         pass
 
     def getDailySpent(self) -> float:
         # So we only fetch once
         if not self.dailySpent:
-            self.dailySpent = self.fetchDailySpent()
-            return self.dailySpent
+            self.dailySpent = self.mintConn.get_yesterdays_transations
         return self.dailySpent
-
-    def fetchDailySpent(self):
-        # Get daily spent from bank account
-        return 50.0
 
     def getLastPaycheck(self) -> float:
         if not self.lastPaycheck:
-            self.lastPaycheck = self.fetchLastPaycheck()
-            return self.lastPaycheck
+            self.lastPaycheck = self.mintConn.get_last_paycheck
         # Do This later, This would be the biweekly paycheck amount
         return self.lastPaycheck
 
-    def fetchLastPaycheck(self):
-        # Get last paycheck from bank account
-        return 1648.55
 
-class BankConnection(object):
+class MintConnection(object):
     def __init__(self):
-        load_dotenv()
-        client_id = os.getenv('CLIENT_ID')
-        secret = os.getenv('CLIENT_SECRET')
-        print(client_id, secret)
-        # create link to bank account and login, get account info
-        self.configuration = plaid.Configuration(
-            host=plaid.Environment.Sandbox,
-            api_key={
-                'clientId': client_id,
-                'secret': secret,
-            }
+        password = "get from env"
+        self.mint = mintapi.Mint(
+            "abisgood30@gmail.com",
+            password,
         )
 
-        api_client = plaid.ApiClient(self.configuration)
-        client = plaid_api.PlaidApi(api_client)
-        
-        
-    
+    def get_yesterdays_spent(self):
+        transactions: pd.DataFrame = self._get_yesterdays_transations()
+        totalSpent: float = None
+        # TODO calc total spent from dataframe
+        return totalSpent
+
+    def _get_yesterdays_transations(self):
+        yesterday = datetime.date(datetime.now() - timedelta(days=1))
+        transactionData: pd.DataFrame = self.mint.get_transaction_data(yesterday, yesterday)
+        return transactionData
+
+    def get_last_paycheck(self):
+        # TODO use mint api logic last paycheck to chase savings account
+        return 1643
+
+
 def main():
-    x = BankConnection()
+    x = MintConnection()
+
 
 main()
