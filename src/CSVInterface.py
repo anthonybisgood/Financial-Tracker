@@ -23,7 +23,7 @@ class CSVInterface(object):
 
     def getWeeklySpent(self) -> float:
         if not self.weeklySpent:
-            SpentEarned: list = self.getExpenses_Budget(7)
+            SpentEarned: list = self._getExpensesBudget(7)
             self.weeklySpent = SpentEarned[0]
             self.weeklyEarned = SpentEarned[1]
             return self.weeklySpent
@@ -31,7 +31,7 @@ class CSVInterface(object):
 
     def getMonthlySpent(self) -> float:
         if not self.monthlySpent:
-            SpentEarned: list = self.getExpenses_Budget(30)
+            SpentEarned: list = self._getExpensesBudget(30)
             self.monthlySpent = SpentEarned[0]
             self.monthlyEarned = SpentEarned[1]
             return self.weeklySpent
@@ -39,7 +39,7 @@ class CSVInterface(object):
 
     def getYearlySpent(self) -> float:
         if not self.yearlySpent:
-            SpentEarned: list = self.getExpenses_Budget(365)
+            SpentEarned: list = self._getExpensesBudget(365)
             self.yearlySpent = SpentEarned[0]
             self.yearlyEarned = SpentEarned[1]
             return self.yearlySpent
@@ -62,7 +62,7 @@ class CSVInterface(object):
 
     # budget for the month or year is money earned * projected earnings
 
-    def getExpenses_Budget(self, timeframe: int) -> list:
+    def _getExpensesBudget(self, timeframe: int) -> list:
         """Calculates the budget
 
         Args:
@@ -83,11 +83,11 @@ class CSVInterface(object):
                 budget += float(row[2])
         csvRead.close()
 
-        projectedEarnings = self.getProjectedEarnings(timeframe)
+        projectedEarnings = self._getProjectedEarnings(timeframe)
         budget = projectedEarnings + budget
         return [currSpent, budget]
 
-    def getProjectedEarnings(self, timeline: int) -> float:
+    def _getProjectedEarnings(self, timeline: int) -> float:
         daysLeft: int = 0
         if timeline == 7:
             daysLeft = 7 - int(self.todaysDate.strftime("%w")) - 1
