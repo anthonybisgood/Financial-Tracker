@@ -1,7 +1,6 @@
 import os
 import datetime as dt
-import plaid
-from plaid.api import plaid_api
+import mintapi
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -37,20 +36,6 @@ class BankInterface(object):
 class BankConnection(object):
     def __init__(self):
         load_dotenv()
-        client_id = os.getenv('CLIENT_ID')
-        secret = os.getenv('CLIENT_SECRET')
-        print(client_id, secret)
-        # create link to bank account and login, get account info
-        self.configuration = plaid.Configuration(
-            host=plaid.Environment.Sandbox,
-            api_key={
-                'clientId': client_id,
-                'secret': secret,
-            }
-        )
-
-        api_client = plaid.ApiClient(self.configuration)
-        client = plaid_api.PlaidApi(api_client)
         
         
     

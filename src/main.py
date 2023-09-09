@@ -72,4 +72,6 @@ def __main__():
     clientIO.output()
 
 
-__main__()
+if __name__ == __main__():
+    __main__
+    
