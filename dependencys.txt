@@ -1,2 +1,0 @@
-pip3 install mintapi>=2.0
-pip3 install python-dotenv
