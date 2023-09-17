@@ -21,6 +21,7 @@ class MintConnection(object):
             password,
             wait_for_sync=False,
             wait_for_sync_timeout=500,
+            mfa_method="sms",
         )
         return mint
 
@@ -72,32 +73,24 @@ class BankInterface(object):
                 transactions["date"]
                 == (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
             ]
-            totalSpent += transactions["amount"].sum()
+            totalSpent = transactions["amount"].sum()
         return totalSpent
 
-    def _get_last_paycheck(self):
+    def _get_last_paycheck(self) -> float:
         checkings_account_ids = self._getDebitAccounts()
         last_paycheck = -1
         for account_id in checkings_account_ids:
             account_transactions: pd.DataFrame = self.get_account_transactions(
                 account_id
             )
-            filtered = account_transactions[
-                account_transactions["category"].str.contains("Paycheck")
-            ].iloc[0]hl2
+            if "category" in account_transactions.columns:
+                paycheck_df = account_transactions[
+                    account_transactions["category"].apply(
+                        lambda x: isinstance(x, dict) and x.get("name") == "Paycheck"
+                    )
+                ]
+                last_paycheck = paycheck_df.iloc[0]["amount"]
         return last_paycheck
-
-    def _calc_spent(self, transactions: pd.DataFrame) -> float:
-        """Calculate the total spent from a dataframe of transactions
-
-        Args:
-            transactions (pd.DataFrame): dataframe of transactions
-
-        Returns:
-            float: total spent
-        """
-        spent = transactions["amount"].sum()
-        return spent
 
     def _getDebitAccounts(self) -> list[str]:
         accounts = self.mintConn.get_account_data()
@@ -131,9 +124,10 @@ def main():
     mintConn = MintConnection()
     mint = mintConn.getMintConn()
     bi = BankInterface(mint)
-    bi.getLastPaycheck()
-    # bi.getDailySpent()
-
+    yesterday_spent = bi.getDailySpent()
+    print("Yesterday spent: {}".format(yesterday_spent))
+    last_paycheck = bi.getLastPaycheck()
+    print("Last paycheck: {}".format(last_paycheck))
     mintConn.closeMintConn(mint)
 
 
