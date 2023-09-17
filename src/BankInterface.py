@@ -37,7 +37,6 @@ class BankInterface(object):
         self.mintConn = mintConn
         self.accounts = self.getAccountData()
         self.tr_df = None
-        pass
 
     def getDailySpent(self) -> float:
         """returns the amount spent yesterday
@@ -93,30 +92,30 @@ class BankInterface(object):
         return last_paycheck
 
     def _getDebitAccounts(self) -> list[str]:
-        accounts = self.mintConn.get_account_data()
-        accountIDs = []
-        for account in accounts:
-            if account["name"] == "CHASE SAVINGS":
-                accountIDs.append(account["id"])
-        return accountIDs
+        accounts = self.accounts
+        checking_account_ids = accounts.loc[accounts['bankAccountType'] == 'CHECKING', 'id'].tolist()
+        print(checking_account_ids)        
+        return checking_account_ids
 
     def _getCreditAccounts(self) -> list[str]:
-        accounts = self.mintConn.get_account_data()
-        accountIDs = []
-        for account in accounts:
-            if account["name"] == "CREDIT CARD":
-                accountIDs.append(account["id"])
-        return accountIDs
+        accounts = self.accounts
+        credit_account_ids = accounts.loc[accounts['name'] == 'CREDIT CARD', 'id'].tolist()
+        return credit_account_ids
 
     def getAccountData(self) -> pd.DataFrame:
+        """Returns a dataframe of the accounts data
+
+        Returns:
+            pd.DataFrame: dataframe of the accounts data
+        """
         account_data = self.mintConn.get_account_data()
         ad_df = pd.DataFrame(account_data)
         return ad_df
 
-    def get_account_transactions(self, account_id):
-        tr_df = pd.DataFrame(self.mintConn.get_transaction_data(remove_pending=False))
-        self.tr_df = tr_df
-        account_transactions = tr_df.loc[tr_df["accountId"] == account_id]
+    def get_account_transactions(self, account_id) -> pd.DataFrame:
+        if self.tr_df is None:
+            self.tr_df = pd.DataFrame(self.mintConn.get_transaction_data(remove_pending=False))
+        account_transactions:pd.DataFrame = self.tr_df.loc[self.tr_df["accountId"] == account_id]
         return account_transactions
 
 

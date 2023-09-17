@@ -17,10 +17,13 @@ class CSVInterface(object):
         csvWrite: csv = open("./src/data.csv", "a", newline="")
         amountSpent: float = self.bankInterface.getDailySpent()
         csvWriter: csv.writer = csv.writer(csvWrite)
-        dailyBudget: float = round(self.bankInterface.getLastPaycheck() / 28, 2)
+        lastPaycheck: float = self.bankInterface.getLastPaycheck()
+        allocatedExpense: float = round(lastPaycheck * 0.75, 2)
+        dailyBudget: float = round(allocatedExpense / 28, 2)
         csvWriter.writerow([str(self.todaysDate), str(amountSpent), dailyBudget])
         csvWrite.close()
-
+ 
+ 
     def getWeeklySpent(self) -> float:
         if self.weeklySpent is None:
             SpentEarned: list = self._getExpensesBudget(7)
