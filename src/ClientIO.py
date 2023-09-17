@@ -21,21 +21,26 @@ class ClientIO(object):
         yearlyBudget: float = self.csvInterface.getYearlyEarned()
         return round(self.csvInterface.getYearlySpent() / yearlyBudget * 100, 2)
 
-    def output(self):
-        print("Money spent today: " + str(self.bankInterface.getDailySpent()))
-        print(
-            "Percent of weekly budget spent: " + str(self.percentOfWeeklyBudgetSpent())
+    def _genericMessage(self) -> str:
+        res = "Money spent today: ${}".format(str(self.bankInterface.getDailySpent()))
+        res += "\nPercent of weekly budget spent: {}".format(
+            str(self.percentOfWeeklyBudgetSpent())
         )
-        print(
-            "Percent of monthly budget spent: "
-            + str(self.percentOfMonthlyBudgetSpent())
+        res += "\nPercent of monthly budget spent: {}".format(
+            str(self.percentOfMonthlyBudgetSpent())
         )
-        print(
-            "Percent of yearly budget spent: " + str(self.percentOfYearlyBudgetSpent())
+        res += "\nPercent of yearly budget spent: {}".format(
+            str(self.percentOfYearlyBudgetSpent())
         )
+        return res
 
     def sendText(self):
         account_sid = os.getenv("TWLIO_ACCOUNT_SID")
         auth_token = os.getenv("TWILIO_AUTH_TOKEN")
         client = Client(account_sid, auth_token)
-        message = client.messages.create(body="", from_="", to_="+15204440142")
+        msg = self._genericMessage()
+        text = client.messages.create(body=msg, from_="", to_="+15204440142")
+
+def main():
+    pass
+main()
