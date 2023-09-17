@@ -8,7 +8,7 @@ from ClientIO import ClientIO
 
 # TODO: set up EC2 instance
 # TODO: set up cron job to run this script every day
-# TODO: set up email service to send email to user
+# TODO: set up msg service to send msg to user
 # TODO: set up link to bank account info
 
 

@@ -35,12 +35,7 @@ class ClientIO(object):
         )
 
     def sendText(self):
-        account_sid = os.getenv('TWLIO_ACCOUNT_SID')
-        auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+        account_sid = os.getenv("TWLIO_ACCOUNT_SID")
+        auth_token = os.getenv("TWILIO_AUTH_TOKEN")
         client = Client(account_sid, auth_token)
-        message = client.messages.create(
-            body = "",
-            from_='',
-            to_='+15204440142'
-            )
-        
+        message = client.messages.create(body="", from_="", to_="+15204440142")

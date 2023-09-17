@@ -22,7 +22,7 @@ class CSVInterface(object):
         csvWrite.close()
 
     def getWeeklySpent(self) -> float:
-        if not self.weeklySpent:
+        if self.weeklySpent is None:
             SpentEarned: list = self._getExpensesBudget(7)
             self.weeklySpent = SpentEarned[0]
             self.weeklyEarned = SpentEarned[1]
@@ -30,7 +30,7 @@ class CSVInterface(object):
         return self.weeklySpent
 
     def getMonthlySpent(self) -> float:
-        if not self.monthlySpent:
+        if self.monthlySpent is None:
             SpentEarned: list = self._getExpensesBudget(30)
             self.monthlySpent = SpentEarned[0]
             self.monthlyEarned = SpentEarned[1]
@@ -38,7 +38,7 @@ class CSVInterface(object):
         return self.monthlySpent
 
     def getYearlySpent(self) -> float:
-        if not self.yearlySpent:
+        if self.yearlySpent is None:
             SpentEarned: list = self._getExpensesBudget(365)
             self.yearlySpent = SpentEarned[0]
             self.yearlyEarned = SpentEarned[1]
@@ -46,17 +46,17 @@ class CSVInterface(object):
         return self.yearlySpent
 
     def getWeeklyEarned(self) -> float:
-        if not self.weeklyEarned:
+        if self.weeklyEarned is None:
             self.getWeeklySpent()
         return self.weeklyEarned
 
     def getMonthlyEarned(self) -> float:
-        if not self.monthlyEarned:
+        if self.monthlyEarned is None:
             self.getMonthlySpent()
         return self.monthlyEarned
 
     def getYearlyEarned(self) -> float:
-        if not self.yearlyEarned:
+        if self.yearlyEarned is None:
             self.getYearlySpent()
         return self.yearlyEarned
 
