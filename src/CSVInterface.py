@@ -15,15 +15,10 @@ class CSVInterface(object):
         self.yearlyEarned = None
 
     def addDailySpent(self):
-        csvWrite: csv = open("./data/data.csv", "a", newline="")
         amountSpent: float = self.bankInterface.getDailySpent()
-        csvWriter: csv.writer = csv.writer(csvWrite)
-        lastPaycheck: float = self.bankInterface.getLastPaycheck()
-        allocatedExpense: float = round(lastPaycheck * (2/3), 2)
-        # days between paychecks = 14
         dailyBudget: float = self.bankInterface.getDailyBudget()
-        csvWriter.writerow([str(self.todaysDate), str(amountSpent), dailyBudget])
-        csvWrite.close()
+        self._writeToCSV([str(self.todaysDate), str(amountSpent), dailyBudget])
+        
 
     def getWeeklySpent(self) -> float:
         if self.weeklySpent is None:
@@ -63,8 +58,28 @@ class CSVInterface(object):
         if self.yearlyEarned is None:
             self.getYearlySpent()
         return self.yearlyEarned
-
-    # budget for the month or year is money earned * projected earnings
+    
+    def _populateDB(self):
+        """Internal use only, used to populate data.csv with realistic values
+        """
+        dates:list = []
+        yesterdays_date = datetime.date(datetime.now()+ timedelta(days=-1))
+        for i in range(0, 60):
+            dates.append(yesterdays_date - timedelta(i))
+        dates.sort()
+        EARNED = "57.76"
+        for date in dates:
+            spent = self.bankInterface.getSpentOnDay(date)
+            self._writeToCsv([str(date), str(spent), EARNED])
+            
+        
+    def _writeToCSV(self, toWrite:list):
+        csvWrite: csv = open("./data/data.csv", "a", newline="")
+        csvWriter: csv.writer = csv.writer(csvWrite)
+        csvWriter.writerow(toWrite)
+        csvWrite.close()
+        
+    # budget for the month or year is money earned + projected earnings
 
     def _getExpensesBudget(self, timeframe: int) -> list:
         """Calculates the budget
@@ -99,7 +114,7 @@ class CSVInterface(object):
             daysLeft = 30 - int(self.todaysDate.strftime("%d"))
         if timeline == 365:
             daysLeft = 365 - int(self.todaysDate.strftime("%j"))
-        return round(daysLeft * (self.bankInterface.getLastPaycheck() / 28), 2)
+        return round(daysLeft * (self.bankInterface.getDailyBudget()), 2)
 
     def getDays(self, timeframe: int) -> list:
         """Gets the days spent from x days ago, to today. Starts from
@@ -135,4 +150,7 @@ class CSVInterface(object):
                 datesFromTimeframe.append(str(timeframeDate + timedelta(days=i)))
         return datesFromTimeframe
     
-    
+
+
+        
+        

@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import MintConnection
 
 PAYCHECK_ALLOCATED_TO_EXPENSES = 2 / 3
-
+TIME_BETWEEN_PAYCHECKS = 14
 
 class BankInterface(object):
     def __init__(self, mint: MintConnection):
@@ -47,7 +47,7 @@ class BankInterface(object):
         allocatedExpenses = round(
             self.lastPaycheck * (PAYCHECK_ALLOCATED_TO_EXPENSES), 2
         )
-        dailyBudget = round(allocatedExpenses / 14, 2)
+        dailyBudget = round(allocatedExpenses / TIME_BETWEEN_PAYCHECKS, 2)
         return dailyBudget
 
     def _get_yesterdays_spent(self) -> float:
@@ -67,6 +67,20 @@ class BankInterface(object):
             totalSpent = transactions["amount"].sum()
         totalSpent = round(totalSpent, 2) * -1
         return totalSpent
+    
+    def getSpendOnDay(self, date:datetime):
+        credit_account_ids = self._getCreditAccounts()
+        totalSpent: float = 0
+        for account_id in credit_account_ids:
+            transactions = self._get_account_transactions(account_id)
+            transactions = transactions.loc[
+                transactions["date"]
+                == (date).strftime("%Y-%m-%d")
+            ]
+            totalSpent = transactions["amount"].sum()
+        totalSpent = round(totalSpent, 2) * -1
+        return totalSpent
+        
 
     def _get_last_paycheck(self) -> float:
         checkings_account_ids = self._getDebitAccounts()
