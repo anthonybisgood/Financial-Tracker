@@ -2,10 +2,11 @@ import BankInterface
 from datetime import datetime, timedelta
 import csv
 
+
 class CSVInterface(object):
-    def __init__(self, bankInterface):
+    def __init__(self, bankInterface: BankInterface):
         self.bankInterface: BankInterface = bankInterface
-        self.todaysDate: datetime = datetime.date(datetime.now())
+        self.todaysDate: datetime = datetime.date(datetime.now()) - timedelta(days=1)
         self.weeklySpent = None
         self.weeklyEarned = None
         self.monthlySpent = None
@@ -14,16 +15,16 @@ class CSVInterface(object):
         self.yearlyEarned = None
 
     def addDailySpent(self):
-        csvWrite: csv = open("./src/data.csv", "a", newline="")
+        csvWrite: csv = open("./data/data.csv", "a", newline="")
         amountSpent: float = self.bankInterface.getDailySpent()
         csvWriter: csv.writer = csv.writer(csvWrite)
         lastPaycheck: float = self.bankInterface.getLastPaycheck()
-        allocatedExpense: float = round(lastPaycheck * 0.75, 2)
-        dailyBudget: float = round(allocatedExpense / 28, 2)
+        allocatedExpense: float = round(lastPaycheck * (2/3), 2)
+        # days between paychecks = 14
+        dailyBudget: float = round(allocatedExpense / 14, 2)
         csvWriter.writerow([str(self.todaysDate), str(amountSpent), dailyBudget])
         csvWrite.close()
- 
- 
+
     def getWeeklySpent(self) -> float:
         if self.weeklySpent is None:
             SpentEarned: list = self._getExpensesBudget(7)
@@ -78,7 +79,7 @@ class CSVInterface(object):
         currSpent: float = 0
         budget: float = 0
         datesFromTimeframe: list = self.getDays(timeframe)
-        csvRead: csv = open("./src/data.csv", "r")
+        csvRead: csv = open("./data/data.csv", "r")
         csvReader: csv.reader = csv.reader(csvRead)
         for row in csvReader:
             if row and row[0] in datesFromTimeframe:

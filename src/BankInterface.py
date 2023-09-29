@@ -1,43 +1,28 @@
-import os
 
-import datetime as dt
-from dotenv import load_dotenv
 import mintapi
 from datetime import datetime, timedelta
-from pathlib import Path
 import pandas as pd
 
 # Replace 'path_to_chromedriver' with the actual path to your ChromeDriver executable
-
-
-class MintConnection(object):
-    def __init__(self):
-        load_dotenv()
-
-    def getMintConn(self) -> mintapi.Mint:
-        password = os.getenv("MINT_PASS")
-        mint = mintapi.Mint(
-            "abisgood10@gmail.com",
-            password,
-            wait_for_sync=False,
-            wait_for_sync_timeout=500,
-            mfa_method="sms",
-        )
-        return mint
-
-    def closeMintConn(self, mint: mintapi.Mint):
-        mint.close()
+import mintapi
+import os
+from dotenv import load_dotenv
+import MintConnection
 
 
 class BankInterface(object):
-    def __init__(self, mintConn: mintapi.Mint):
+    def __init__(self, mint: MintConnection):
         # create link to bank account and login, get account info
         self.dailySpent = None
         self.lastPaycheck = None
-        self.mintConn = mintConn
+        self.mint = mint
+        self.mintConn = self.mint.getMintConn()
         self.accounts = self.getAccountData()
         self.tr_df = None
+        self.getLastPaycheck()
+        self.getDailySpent()
 
+    
     def getDailySpent(self) -> float:
         """returns the amount spent yesterday
 
@@ -73,6 +58,7 @@ class BankInterface(object):
                 == (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
             ]
             totalSpent = transactions["amount"].sum()
+        totalSpent = round(totalSpent, 2) * -1
         return totalSpent
 
     def _get_last_paycheck(self) -> float:
@@ -93,13 +79,17 @@ class BankInterface(object):
 
     def _getDebitAccounts(self) -> list[str]:
         accounts = self.accounts
-        checking_account_ids = accounts.loc[accounts['bankAccountType'] == 'CHECKING', 'id'].tolist()
-        print(checking_account_ids)        
+        checking_account_ids = accounts.loc[
+            accounts["bankAccountType"] == "CHECKING", "id"
+        ].tolist()
+        
         return checking_account_ids
 
     def _getCreditAccounts(self) -> list[str]:
         accounts = self.accounts
-        credit_account_ids = accounts.loc[accounts['name'] == 'CREDIT CARD', 'id'].tolist()
+        credit_account_ids = accounts.loc[
+            accounts["name"] == "CREDIT CARD", "id"
+        ].tolist()
         return credit_account_ids
 
     def getAccountData(self) -> pd.DataFrame:
@@ -114,20 +104,10 @@ class BankInterface(object):
 
     def get_account_transactions(self, account_id) -> pd.DataFrame:
         if self.tr_df is None:
-            self.tr_df = pd.DataFrame(self.mintConn.get_transaction_data(remove_pending=False))
-        account_transactions:pd.DataFrame = self.tr_df.loc[self.tr_df["accountId"] == account_id]
+            self.tr_df = pd.DataFrame(
+                self.mintConn.get_transaction_data(remove_pending=False)
+            )
+        account_transactions: pd.DataFrame = self.tr_df.loc[
+            self.tr_df["accountId"] == account_id
+        ]
         return account_transactions
-
-
-def main():
-    mintConn = MintConnection()
-    mint = mintConn.getMintConn()
-    bi = BankInterface(mint)
-    yesterday_spent = bi.getDailySpent()
-    print("Yesterday spent: {}".format(yesterday_spent))
-    last_paycheck = bi.getLastPaycheck()
-    print("Last paycheck: {}".format(last_paycheck))
-    mintConn.closeMintConn(mint)
-
-
-main()

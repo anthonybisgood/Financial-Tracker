@@ -1,16 +1,21 @@
 from BankInterface import BankInterface
 from CSVInterface import CSVInterface
 import os
-from twilio.rest import Client
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
 
 
 class ClientIO(object):
     def __init__(self, bankInterface: BankInterface, csvInterface: CSVInterface):
         self.bankInterface: BankInterface = bankInterface
         self.csvInterface: CSVInterface = csvInterface
+        self.body = self._genericMessage()
 
     def percentOfWeeklyBudgetSpent(self) -> float:
         weeklyBudget: float = self.csvInterface.getWeeklyEarned()
+        print(weeklyBudget)
         return round(self.csvInterface.getWeeklySpent() / weeklyBudget * 100, 2)
 
     def percentOfMonthlyBudgetSpent(self) -> float:
@@ -29,18 +34,39 @@ class ClientIO(object):
         res += "\nPercent of monthly budget spent: {}".format(
             str(self.percentOfMonthlyBudgetSpent())
         )
-        res += "\nPercent of yearly budget spent: {}".format(
-            str(self.percentOfYearlyBudgetSpent())
-        )
+        # res += "\nPercent of yearly budget spent: {}".format(
+        #     str(self.percentOfYearlyBudgetSpent())
+        # )
+        res += "\n"
         return res
 
     def sendText(self):
-        account_sid = os.getenv("TWLIO_ACCOUNT_SID")
-        auth_token = os.getenv("TWILIO_AUTH_TOKEN")
-        client = Client(account_sid, auth_token)
-        msg = self._genericMessage()
-        text = client.messages.create(body=msg, from_="", to_="+15204440142")
+        load_dotenv()
+        email = str(os.getenv("EMAIL"))
+        pas = str(os.getenv("EMAIL_PASS"))
+        phoneNumber = str(os.getenv("PHONE_NUM"))
+        sms_gateway = phoneNumber + "@vtext.com"
+        # The server we use to send emails in our case it will be gmail but every email provider has a different smtp
+        # and port is also provided by the email provider.
+        smtp = "smtp.gmail.com"
+        port = 587
 
-def main():
-    pass
-main()
+        # Now we use the MIME module to structure our message.
+        msg = MIMEMultipart()
+        msg["From"] = email
+        msg["To"] = sms_gateway
+        # Make sure you add a new line in the subject
+        msg["Subject"] = "Financial statement\n"
+        # Make sure you also add new lines to your body
+        # and then attach that body furthermore you can also send html content.
+        # msg.attach(MIMEText(self.body.encode("utf-8"), "plain", "utf-8"))
+
+        # This will start our email server
+        server = smtplib.SMTP(smtp, port)
+        # Starting the server
+        server.starttls()
+        # Now we need to login
+        server.login(msg["From"], pas)
+        server.sendmail(email, sms_gateway, self.body)
+        server.quit()
+
