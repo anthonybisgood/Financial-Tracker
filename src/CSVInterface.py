@@ -1,12 +1,15 @@
 import BankInterface
 from datetime import datetime, timedelta
+import calendar
 import csv
 
 
 class CSVInterface(object):
     def __init__(self, bankInterface: BankInterface):
         self.bankInterface: BankInterface = bankInterface
-        self.yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(days=1)
+        self.yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(
+            days=1
+        )
         self.weeklySpent = None
         self.weeklyEarned = None
         self.monthlySpent = None
@@ -104,13 +107,25 @@ class CSVInterface(object):
         return [currSpent, budget]
 
     def _getProjectedEarnings(self, timeline: int) -> float:
+        """Calculates the projected earnings for the rest of the week, month or year based on <timeline>
+
+        Args:
+            timeline (int): 7, 30, or 365 based of the timeline the program wants
+
+        Returns:
+            float: how much money im projected to make for the rest of the year
+        """
         daysLeft: int = 0
         if timeline == 7:
             daysLeft = 7 - int(self.yesterdaysDate.strftime("%w")) - 1
         if timeline == 30:
-            daysLeft = 30 - int(self.yesterdaysDate.strftime("%d"))
+            daysInMonth = calendar.monthrange(
+                self.yesterdaysDate.year, self.yesterdaysDate.month
+            )[1]
+            daysLeft = daysInMonth - int(self.yesterdaysDate.strftime("%d"))
         if timeline == 365:
-            daysLeft = 365 - int(self.yesterdaysDate.strftime("%j"))
+            daysInYear = 365 + calendar.isleap(datetime.now().year)
+            daysLeft = daysInYear - int(self.yesterdaysDate.strftime("%j"))
         return round(daysLeft * (self.bankInterface.getDailyBudget()), 2)
 
     def getDays(self, timeframe: int) -> list:

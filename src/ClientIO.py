@@ -33,13 +33,18 @@ class ClientIO(object):
         res += "\nPercent of monthly budget spent: {}%".format(
             str(self.percentOfMonthlyBudgetSpent())
         )
-        # res += "\nPercent of yearly budget spent: {}%".format(
-        #     str(self.percentOfYearlyBudgetSpent())
-        # )
+        res += "\n"
+        return res
+    
+    def _firstOfTheMonthMessage(self) -> str:
+        res = "Spent this month: ${}".format(str(self.csvInterface.getMonthlyEarned()))
+        res += "\nPercent of yearly budget spent: {}%".format(
+            str(self.percentOfYearlyBudgetSpent())
+        )
         res += "\n"
         return res
 
-    def sendText(self):
+    def sendText(self, body):
         load_dotenv()
         email = str(os.getenv("EMAIL"))
         pas = str(os.getenv("EMAIL_PASS"))
@@ -56,7 +61,7 @@ class ClientIO(object):
         msg["To"] = sms_gateway
         # Make sure you add a new line in the subject
         msg["Subject"] = "\n"
-        body = "\r\n\r\n"+self._genericMessage()
+        body = "\r\n\r\n"+body
         # Make sure you also add new lines to your body
         # and then attach that body furthermore you can also send html content.
         msg.attach(MIMEText(body.encode("utf-8"), "plain", "utf-8"))

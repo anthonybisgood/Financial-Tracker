@@ -20,7 +20,12 @@ def __main__():
     csvInterface = CSVInterface(bankInterface)
     csvInterface.addDailySpent()
     clientIo = ClientIO(bankInterface, csvInterface)
-    clientIo.sendText()
+    
+    body = clientIo._genericMessage()
+    clientIo.sendText(body)
+    # if first of month:
+    # body == clientIo._firstOfTheMonthMessage()
+    # clientIo.sendText(body)
 
 if __name__ == __main__():
     __main__
