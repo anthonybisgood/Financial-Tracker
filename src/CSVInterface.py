@@ -6,7 +6,7 @@ import csv
 class CSVInterface(object):
     def __init__(self, bankInterface: BankInterface):
         self.bankInterface: BankInterface = bankInterface
-        self.todaysDate: datetime = datetime.date(datetime.now()) - timedelta(days=1)
+        self.yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(days=1)
         self.weeklySpent = None
         self.weeklyEarned = None
         self.monthlySpent = None
@@ -17,8 +17,7 @@ class CSVInterface(object):
     def addDailySpent(self):
         amountSpent: float = self.bankInterface.getDailySpent()
         dailyBudget: float = self.bankInterface.getDailyBudget()
-        self._writeToCSV([str(self.todaysDate), str(amountSpent), dailyBudget])
-        
+        self._writeToCSV([str(self.yesterdaysDate), str(amountSpent), dailyBudget])
 
     def getWeeklySpent(self) -> float:
         if self.weeklySpent is None:
@@ -58,12 +57,11 @@ class CSVInterface(object):
         if self.yearlyEarned is None:
             self.getYearlySpent()
         return self.yearlyEarned
-    
+
     def _populateDB(self):
-        """Internal use only, used to populate data.csv with realistic values
-        """
-        dates:list = []
-        yesterdays_date = datetime.date(datetime.now()+ timedelta(days=-1))
+        """Internal use only, used to populate data.csv with realistic values"""
+        dates: list = []
+        yesterdays_date = datetime.date(datetime.now() + timedelta(days=-1))
         for i in range(0, 60):
             dates.append(yesterdays_date - timedelta(i))
         dates.sort()
@@ -71,14 +69,13 @@ class CSVInterface(object):
         for date in dates:
             spent = self.bankInterface.getSpentOnDay(date)
             self._writeToCsv([str(date), str(spent), EARNED])
-            
-        
-    def _writeToCSV(self, toWrite:list):
+
+    def _writeToCSV(self, toWrite: list):
         csvWrite: csv = open("./data/data.csv", "a", newline="")
         csvWriter: csv.writer = csv.writer(csvWrite)
         csvWriter.writerow(toWrite)
         csvWrite.close()
-        
+
     # budget for the month or year is money earned + projected earnings
 
     def _getExpensesBudget(self, timeframe: int) -> list:
@@ -109,11 +106,11 @@ class CSVInterface(object):
     def _getProjectedEarnings(self, timeline: int) -> float:
         daysLeft: int = 0
         if timeline == 7:
-            daysLeft = 7 - int(self.todaysDate.strftime("%w")) - 1
+            daysLeft = 7 - int(self.yesterdaysDate.strftime("%w")) - 1
         if timeline == 30:
-            daysLeft = 30 - int(self.todaysDate.strftime("%d"))
+            daysLeft = 30 - int(self.yesterdaysDate.strftime("%d"))
         if timeline == 365:
-            daysLeft = 365 - int(self.todaysDate.strftime("%j"))
+            daysLeft = 365 - int(self.yesterdaysDate.strftime("%j"))
         return round(daysLeft * (self.bankInterface.getDailyBudget()), 2)
 
     def getDays(self, timeframe: int) -> list:
@@ -129,28 +126,23 @@ class CSVInterface(object):
         datesFromTimeframe: list = []
         if timeframe == 7:
             # gets nearest past sunday
-            timeframeDate = self.todaysDate - timedelta(
-                days=int(self.todaysDate.strftime("%w"))
+            timeframeDate = self.yesterdaysDate - timedelta(
+                days=int(self.yesterdaysDate.strftime("%w"))
             )
-            for i in range(0, int(self.todaysDate.strftime("%w")) + 1):
+            for i in range(0, int(self.yesterdaysDate.strftime("%w")) + 1):
                 datesFromTimeframe.append(str(timeframeDate + timedelta(days=i)))
         if timeframe == 30:
             # gets nearest past first of the month
-            timeframeDate = self.todaysDate - timedelta(
-                days=int(self.todaysDate.strftime("%d")) - 1
+            timeframeDate = self.yesterdaysDate - timedelta(
+                days=int(self.yesterdaysDate.strftime("%d")) - 1
             )
-            for i in range(0, int(self.todaysDate.strftime("%d"))):
+            for i in range(0, int(self.yesterdaysDate.strftime("%d"))):
                 datesFromTimeframe.append(str(timeframeDate + timedelta(days=i)))
         if timeframe == 365:
             # gets nearest past first of the year
-            timeframeDate = self.todaysDate - timedelta(
-                days=int(self.todaysDate.strftime("%j")) - 1
+            timeframeDate = self.yesterdaysDate - timedelta(
+                days=int(self.yesterdaysDate.strftime("%j")) - 1
             )
-            for i in range(0, int(self.todaysDate.strftime("%j"))):
+            for i in range(0, int(self.yesterdaysDate.strftime("%j"))):
                 datesFromTimeframe.append(str(timeframeDate + timedelta(days=i)))
         return datesFromTimeframe
-    
-
-
-        
-        

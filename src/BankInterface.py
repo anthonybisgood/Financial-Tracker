@@ -30,7 +30,8 @@ class BankInterface(object):
             float: amount spent yesterday
         """
         if self.dailySpent is None:
-            self.dailySpent = self._get_yesterdays_spent()
+            yesterday = datetime.date(datetime.now()) - timedelta(days=1)
+            self.dailySpent = self.getSpendOnDay(yesterday)
         return self.dailySpent
 
     def getLastPaycheck(self) -> float:
@@ -49,24 +50,6 @@ class BankInterface(object):
         )
         dailyBudget = round(allocatedExpenses / TIME_BETWEEN_PAYCHECKS, 2)
         return dailyBudget
-
-    def _get_yesterdays_spent(self) -> float:
-        """Uses mint api to get yesterdays transactions and calculates total spent
-
-        Returns:
-            _type_: _description_
-        """
-        credit_account_ids = self._getCreditAccounts()
-        totalSpent: float = 0
-        for account_id in credit_account_ids:
-            transactions = self._get_account_transactions(account_id)
-            transactions = transactions.loc[
-                transactions["date"]
-                == (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-            ]
-            totalSpent = transactions["amount"].sum()
-        totalSpent = round(totalSpent, 2) * -1
-        return totalSpent
     
     def getSpendOnDay(self, date:datetime):
         credit_account_ids = self._getCreditAccounts()
