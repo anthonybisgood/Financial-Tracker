@@ -21,7 +21,7 @@ class CSVInterface(object):
         lastPaycheck: float = self.bankInterface.getLastPaycheck()
         allocatedExpense: float = round(lastPaycheck * (2/3), 2)
         # days between paychecks = 14
-        dailyBudget: float = round(allocatedExpense / 14, 2)
+        dailyBudget: float = self.bankInterface.getDailyBudget()
         csvWriter.writerow([str(self.todaysDate), str(amountSpent), dailyBudget])
         csvWrite.close()
 
@@ -134,3 +134,5 @@ class CSVInterface(object):
             for i in range(0, int(self.todaysDate.strftime("%j"))):
                 datesFromTimeframe.append(str(timeframeDate + timedelta(days=i)))
         return datesFromTimeframe
+    
+    

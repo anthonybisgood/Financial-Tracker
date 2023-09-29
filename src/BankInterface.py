@@ -1,4 +1,3 @@
-
 import mintapi
 from datetime import datetime, timedelta
 import pandas as pd
@@ -9,6 +8,8 @@ import os
 from dotenv import load_dotenv
 import MintConnection
 
+PAYCHECK_ALLOCATED_TO_EXPENSES = 2 / 3
+
 
 class BankInterface(object):
     def __init__(self, mint: MintConnection):
@@ -17,12 +18,11 @@ class BankInterface(object):
         self.lastPaycheck = None
         self.mint = mint
         self.mintConn = self.mint.getMintConn()
-        self.accounts = self.getAccountData()
+        self.accounts = self._getAccountData()
         self.tr_df = None
         self.getLastPaycheck()
         self.getDailySpent()
 
-    
     def getDailySpent(self) -> float:
         """returns the amount spent yesterday
 
@@ -43,6 +43,13 @@ class BankInterface(object):
             self.lastPaycheck = self._get_last_paycheck()
         return self.lastPaycheck
 
+    def getDailyBudget(self) -> float:
+        allocatedExpenses = round(
+            self.lastPaycheck * (PAYCHECK_ALLOCATED_TO_EXPENSES), 2
+        )
+        dailyBudget = round(allocatedExpenses / 14, 2)
+        return dailyBudget
+
     def _get_yesterdays_spent(self) -> float:
         """Uses mint api to get yesterdays transactions and calculates total spent
 
@@ -52,7 +59,7 @@ class BankInterface(object):
         credit_account_ids = self._getCreditAccounts()
         totalSpent: float = 0
         for account_id in credit_account_ids:
-            transactions = self.get_account_transactions(account_id)
+            transactions = self._get_account_transactions(account_id)
             transactions = transactions.loc[
                 transactions["date"]
                 == (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -65,7 +72,7 @@ class BankInterface(object):
         checkings_account_ids = self._getDebitAccounts()
         last_paycheck = -1
         for account_id in checkings_account_ids:
-            account_transactions: pd.DataFrame = self.get_account_transactions(
+            account_transactions: pd.DataFrame = self._get_account_transactions(
                 account_id
             )
             if "category" in account_transactions.columns:
@@ -82,7 +89,7 @@ class BankInterface(object):
         checking_account_ids = accounts.loc[
             accounts["bankAccountType"] == "CHECKING", "id"
         ].tolist()
-        
+
         return checking_account_ids
 
     def _getCreditAccounts(self) -> list[str]:
@@ -92,7 +99,7 @@ class BankInterface(object):
         ].tolist()
         return credit_account_ids
 
-    def getAccountData(self) -> pd.DataFrame:
+    def _getAccountData(self) -> pd.DataFrame:
         """Returns a dataframe of the accounts data
 
         Returns:
@@ -102,7 +109,7 @@ class BankInterface(object):
         ad_df = pd.DataFrame(account_data)
         return ad_df
 
-    def get_account_transactions(self, account_id) -> pd.DataFrame:
+    def _get_account_transactions(self, account_id) -> pd.DataFrame:
         if self.tr_df is None:
             self.tr_df = pd.DataFrame(
                 self.mintConn.get_transaction_data(remove_pending=False)
