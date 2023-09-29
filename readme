@@ -2,3 +2,6 @@ Tracks daily expenses from Chase app and compares them to the budget
 Does it by monthly budget
 
 pip3 install -r dependencies.txt
+
+FIX BUGS ON PERCENTAGE OF SPENT
+sms wont send yearly percentage, too long?

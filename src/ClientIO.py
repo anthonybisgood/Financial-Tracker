@@ -11,11 +11,10 @@ class ClientIO(object):
     def __init__(self, bankInterface: BankInterface, csvInterface: CSVInterface):
         self.bankInterface: BankInterface = bankInterface
         self.csvInterface: CSVInterface = csvInterface
-        self.body = self._genericMessage()
+        
 
     def percentOfWeeklyBudgetSpent(self) -> float:
         weeklyBudget: float = self.csvInterface.getWeeklyEarned()
-        print(weeklyBudget)
         return round(self.csvInterface.getWeeklySpent() / weeklyBudget * 100, 2)
 
     def percentOfMonthlyBudgetSpent(self) -> float:
@@ -27,14 +26,14 @@ class ClientIO(object):
         return round(self.csvInterface.getYearlySpent() / yearlyBudget * 100, 2)
 
     def _genericMessage(self) -> str:
-        res = "Money spent today: ${}".format(str(self.bankInterface.getDailySpent()))
-        res += "\nPercent of weekly budget spent: {}".format(
+        res = "Spent yesterday: ${}".format(str(self.bankInterface.getDailySpent()))
+        res += "\nPercent of weekly budget spent: {}%".format(
             str(self.percentOfWeeklyBudgetSpent())
         )
-        res += "\nPercent of monthly budget spent: {}".format(
+        res += "\nPercent of monthly budget spent: {}%".format(
             str(self.percentOfMonthlyBudgetSpent())
         )
-        # res += "\nPercent of yearly budget spent: {}".format(
+        # res += "\nPercent of yearly budget spent: {}%".format(
         #     str(self.percentOfYearlyBudgetSpent())
         # )
         res += "\n"
@@ -56,10 +55,11 @@ class ClientIO(object):
         msg["From"] = email
         msg["To"] = sms_gateway
         # Make sure you add a new line in the subject
-        msg["Subject"] = "Financial statement\n"
+        msg["Subject"] = "\n"
+        body = "\r\n\r\n"+self._genericMessage()
         # Make sure you also add new lines to your body
         # and then attach that body furthermore you can also send html content.
-        # msg.attach(MIMEText(self.body.encode("utf-8"), "plain", "utf-8"))
+        msg.attach(MIMEText(body.encode("utf-8"), "plain", "utf-8"))
 
         # This will start our email server
         server = smtplib.SMTP(smtp, port)
@@ -67,6 +67,6 @@ class ClientIO(object):
         server.starttls()
         # Now we need to login
         server.login(msg["From"], pas)
-        server.sendmail(email, sms_gateway, self.body)
+        server.sendmail(msg["From"] , msg["To"],body)
         server.quit()
 
