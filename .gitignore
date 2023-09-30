@@ -3,3 +3,4 @@ LISCENSE.chromedriver
 temp.py
 account_transactions.csv
 transactions.csv
+src/__pycache__/*
