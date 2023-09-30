@@ -20,27 +20,9 @@ def __main__():
     csvInterface = CSVInterface(bankInterface)
     csvInterface.addDailySpent()
     clientIo = ClientIO(bankInterface, csvInterface)
-    
-    body = clientIo._genericMessage()
-    clientIo.sendText(body)
-    # if first of month:
-    # body == clientIo._firstOfTheMonthMessage()
-    # clientIo.sendText(body)
+    clientIo.sendText()
+    mintConn.closeMintConn()
 
 if __name__ == __main__():
     __main__
     
-
-
-# def populateCSV():
-#     csvWrite: csv = open("./src/data.csv", "w", newline="")
-#     csvWriter: csv.writer = csv.writer(csvWrite)
-#     csvWriter.writerow(["Date", "Amount Spent", "Daily Budget"])
-#     days = 15
-#     startDate: datetime = datetime.date(datetime.now() - timedelta(days=days))
-#     import random
-
-#     for i in range(1, days):
-#         csvWriter.writerow(
-#             [str(startDate + timedelta(days=i)), random.randint(20, 75), 58.88]
-#         )

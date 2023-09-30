@@ -11,6 +11,7 @@ import MintConnection
 PAYCHECK_ALLOCATED_TO_EXPENSES = 2 / 3
 TIME_BETWEEN_PAYCHECKS = 14
 
+
 class BankInterface(object):
     def __init__(self, mint: MintConnection):
         # create link to bank account and login, get account info
@@ -31,7 +32,7 @@ class BankInterface(object):
         """
         if self.dailySpent is None:
             yesterday = datetime.date(datetime.now()) - timedelta(days=1)
-            self.dailySpent = self.getSpendOnDay(yesterday)
+            self.dailySpent = self.getSpentOnDay(yesterday)
         return self.dailySpent
 
     def getLastPaycheck(self) -> float:
@@ -50,20 +51,27 @@ class BankInterface(object):
         )
         dailyBudget = round(allocatedExpenses / TIME_BETWEEN_PAYCHECKS, 2)
         return dailyBudget
-    
-    def getSpendOnDay(self, date:datetime):
+
+    def getSpentOnDay(self, date: datetime):
         credit_account_ids = self._getCreditAccounts()
         totalSpent: float = 0
         for account_id in credit_account_ids:
             transactions = self._get_account_transactions(account_id)
             transactions = transactions.loc[
-                transactions["date"]
-                == (date).strftime("%Y-%m-%d")
+                transactions["date"] == (date).strftime("%Y-%m-%d")
             ]
-            totalSpent = transactions["amount"].sum()
+            if "description" in transactions.columns:
+                transactions = transactions[
+                    transactions["description"].apply(
+                        lambda x: isinstance(x, str) and "Payment" not in x
+                    )
+                ]
+                if not transactions.empty:
+                    totalSpent += transactions.get("amount").sum()
         totalSpent = round(totalSpent, 2) * -1
+        if totalSpent == 0:
+            totalSpent = 0.00
         return totalSpent
-        
 
     def _get_last_paycheck(self) -> float:
         checkings_account_ids = self._getDebitAccounts()

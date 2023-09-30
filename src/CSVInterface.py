@@ -20,10 +20,17 @@ class CSVInterface(object):
     def addDailySpent(self):
         amountSpent: float = self.bankInterface.getDailySpent()
         dailyBudget: float = self.bankInterface.getDailyBudget()
-        self._writeToCSV([str(self.yesterdaysDate), str(amountSpent), dailyBudget])
+        csvWrite: csv = open("./data/data.csv", "a", newline="")
+        csvWriter: csv.writer = csv.writer(csvWrite)
+        self._writeToCSV(
+            [str(self.yesterdaysDate), str(amountSpent), dailyBudget],
+            csvWriter,
+            csvWrite,
+        )
+        csvWrite.close()
 
     def getWeeklySpent(self) -> float:
-        if self.weeklySpent is None:
+        if self.weeklySpent is None or self.weeklyEarned is None:
             SpentEarned: list = self._getExpensesBudget(7)
             self.weeklySpent = SpentEarned[0]
             self.weeklyEarned = SpentEarned[1]
@@ -31,7 +38,7 @@ class CSVInterface(object):
         return self.weeklySpent
 
     def getMonthlySpent(self) -> float:
-        if self.monthlySpent is None:
+        if self.monthlySpent is None or self.monthlyEarned is None:
             SpentEarned: list = self._getExpensesBudget(30)
             self.monthlySpent = SpentEarned[0]
             self.monthlyEarned = SpentEarned[1]
@@ -39,7 +46,7 @@ class CSVInterface(object):
         return self.monthlySpent
 
     def getYearlySpent(self) -> float:
-        if self.yearlySpent is None:
+        if self.yearlySpent is None or self.yearlyEarned is None:
             SpentEarned: list = self._getExpensesBudget(365)
             self.yearlySpent = SpentEarned[0]
             self.yearlyEarned = SpentEarned[1]
@@ -69,15 +76,18 @@ class CSVInterface(object):
             dates.append(yesterdays_date - timedelta(i))
         dates.sort()
         EARNED = "57.76"
-        for date in dates:
-            spent = self.bankInterface.getSpentOnDay(date)
-            self._writeToCsv([str(date), str(spent), EARNED])
-
-    def _writeToCSV(self, toWrite: list):
         csvWrite: csv = open("./data/data.csv", "a", newline="")
         csvWriter: csv.writer = csv.writer(csvWrite)
-        csvWriter.writerow(toWrite)
+        for date in dates:
+            spent = self.bankInterface.getSpentOnDay(date)
+            self._writeToCSV([str(date), str(spent), EARNED], csvWriter, csvWrite)
         csvWrite.close()
+
+    def _writeToCSV(self, toWrite: list, csvWriter, csvWrite):
+        # csvWrite: csv = open("./data/data.csv", "a", newline="")
+        csvWriter: csv.writer = csv.writer(csvWrite)
+        csvWriter.writerow(toWrite)
+        # csvWrite.close()
 
     # budget for the month or year is money earned + projected earnings
 
@@ -101,9 +111,10 @@ class CSVInterface(object):
                 currSpent += float(row[1])
                 budget += float(row[2])
         csvRead.close()
-
         projectedEarnings = self._getProjectedEarnings(timeframe)
         budget = projectedEarnings + budget
+        currSpent = round(currSpent, 2)
+        budget = round(budget, 2)
         return [currSpent, budget]
 
     def _getProjectedEarnings(self, timeline: int) -> float:

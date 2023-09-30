@@ -5,13 +5,13 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
-
+from datetime import datetime
 
 class ClientIO(object):
+
     def __init__(self, bankInterface: BankInterface, csvInterface: CSVInterface):
         self.bankInterface: BankInterface = bankInterface
         self.csvInterface: CSVInterface = csvInterface
-        
 
     def percentOfWeeklyBudgetSpent(self) -> float:
         weeklyBudget: float = self.csvInterface.getWeeklyEarned()
@@ -26,52 +26,44 @@ class ClientIO(object):
         return round(self.csvInterface.getYearlySpent() / yearlyBudget * 100, 2)
 
     def _genericMessage(self) -> str:
-        res = "Spent yesterday: ${}".format(str(self.bankInterface.getDailySpent()))
-        res += "\nPercent of weekly budget spent: {}%".format(
+        res = "\nSpent yesterday: ${}".format(str(self.bankInterface.getDailySpent()))
+        res += "\nPercent of weekly budget spent:\n{}%".format(
             str(self.percentOfWeeklyBudgetSpent())
         )
-        res += "\nPercent of monthly budget spent: {}%".format(
+        res += "\nPercent of monthly budget spent:\n{}%".format(
             str(self.percentOfMonthlyBudgetSpent())
         )
-        res += "\n"
+        res += "\r\n\r\n\r\n\r\n"
         return res
-    
+
     def _firstOfTheMonthMessage(self) -> str:
         res = "Spent this month: ${}".format(str(self.csvInterface.getMonthlyEarned()))
-        res += "\nPercent of yearly budget spent: {}%".format(
+        res += "\nPercent of yearly budget spent:\n{}%".format(
             str(self.percentOfYearlyBudgetSpent())
         )
         res += "\n"
         return res
-
-    def sendText(self, body):
+    
+    def getEmailServer(self):
         load_dotenv()
         email = str(os.getenv("EMAIL"))
         pas = str(os.getenv("EMAIL_PASS"))
-        phoneNumber = str(os.getenv("PHONE_NUM"))
-        sms_gateway = phoneNumber + "@vtext.com"
-        # The server we use to send emails in our case it will be gmail but every email provider has a different smtp
-        # and port is also provided by the email provider.
         smtp = "smtp.gmail.com"
         port = 587
-
-        # Now we use the MIME module to structure our message.
-        msg = MIMEMultipart()
-        msg["From"] = email
-        msg["To"] = sms_gateway
-        # Make sure you add a new line in the subject
-        msg["Subject"] = "\n"
-        body = "\r\n\r\n"+body
-        # Make sure you also add new lines to your body
-        # and then attach that body furthermore you can also send html content.
-        msg.attach(MIMEText(body.encode("utf-8"), "plain", "utf-8"))
-
-        # This will start our email server
         server = smtplib.SMTP(smtp, port)
-        # Starting the server
         server.starttls()
-        # Now we need to login
-        server.login(msg["From"], pas)
-        server.sendmail(msg["From"] , msg["To"],body)
+        server.login(email, pas)
+        return server
+    
+    def sendText(self):
+        phoneNumber = str(os.getenv("PHONE_NUM"))
+        email = str(os.getenv("EMAIL"))
+        sms_gateway = phoneNumber + "@vtext.com"
+        server = self.getEmailServer()
+        body = self._genericMessage()
+        server.sendmail(email, sms_gateway, msg = body)
+        # if first of month
+        if datetime.now().day == 1:
+            body = "\r\n\r\n" + self._firstOfTheMonthMessage()
+            server.sendmail(email,  sms_gateway, msg = body)
         server.quit()
-
