@@ -1,10 +1,5 @@
-import mintapi
 from datetime import datetime, timedelta
 import pandas as pd
-
-# Replace 'path_to_chromedriver' with the actual path to your ChromeDriver executable
-import mintapi
-import os
 from dotenv import load_dotenv
 import MintConnection
 

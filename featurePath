@@ -1,0 +1,8 @@
+Dockerize
+
+add help to send back to client
+
+ssh -i /home/anthony/Fin-Tracker.pem ec2-user@ec2-34-219-66-7.us-west-2.compute.amazonaws.com
+
+scp -i /home/anthony/Fin-Tracker.pem chromedriver.exe  ec2-user@ec2-34-219-66-7.us-west-2.compute.amazonaws.com:/home/ec2-user/app/FinTracker/src
+

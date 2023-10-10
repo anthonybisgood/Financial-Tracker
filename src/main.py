@@ -1,6 +1,3 @@
-import csv
-from datetime import datetime, timedelta
-import time
 from BankInterface import BankInterface
 from CSVInterface import CSVInterface
 from ClientIO import ClientIO
@@ -16,12 +13,13 @@ from MintConnection import MintConnection
 def __main__():
     mintConn = MintConnection()
     mintConn.startMintConn()
-    bankInterface = BankInterface(mintConn)
+    bankInterface = BankInterface(mintConn) 
     csvInterface = CSVInterface(bankInterface)
     csvInterface.addDailySpent()
+    mintConn.closeMintConn()
     clientIo = ClientIO(bankInterface, csvInterface)
     clientIo.sendText()
-    mintConn.closeMintConn()
+    
 
 if __name__ == __main__():
     __main__

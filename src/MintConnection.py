@@ -17,6 +17,7 @@ class MintConnection(object):
             username,
             password,
             mfa_method="email",
+            headless = True,
             fail_if_stale=True,
             wait_for_sync=False,
             wait_for_sync_timeout=500,

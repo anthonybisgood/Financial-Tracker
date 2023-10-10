@@ -2,8 +2,6 @@ from BankInterface import BankInterface
 from CSVInterface import CSVInterface
 import os
 import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -33,7 +31,7 @@ class ClientIO(object):
         res += "\nPercent of monthly budget spent:\n{}%".format(
             str(self.percentOfMonthlyBudgetSpent())
         )
-        res += "\r\n\r\n\r\n\r\n"
+        res += "\r\n\r\n\r\n"
         return res
 
     def _firstOfTheMonthMessage(self) -> str:
