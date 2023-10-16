@@ -1,3 +1,0 @@
-pip install git+https://github.com/mintapi/mintapi
-pip3 install python-dotenv
-pip install -U selenium

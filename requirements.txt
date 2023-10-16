@@ -1,0 +1,4 @@
+mintapi
+python-dotenv
+selenium
+selenium-requests

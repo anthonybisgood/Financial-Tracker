@@ -1,10 +1,5 @@
-import mintapi
 from datetime import datetime, timedelta
 import pandas as pd
-
-# Replace 'path_to_chromedriver' with the actual path to your ChromeDriver executable
-import mintapi
-import os
 from dotenv import load_dotenv
 import MintConnection
 
@@ -15,25 +10,24 @@ TIME_BETWEEN_PAYCHECKS = 14
 class BankInterface(object):
     def __init__(self, mint: MintConnection):
         # create link to bank account and login, get account info
-        self.dailySpent = None
-        self.lastPaycheck = None
         self.mint = mint
         self.mintConn = self.mint.getMintConn()
         self.accounts = self._getAccountData()
         self.tr_df = None
+        self.spentYesterday = None
+        self.getSpentYesterday()
+        self.lastPaycheck = None
         self.getLastPaycheck()
-        self.getDailySpent()
 
-    def getDailySpent(self) -> float:
+    def getSpentYesterday(self) -> float:
         """returns the amount spent yesterday
 
         Returns:
             float: amount spent yesterday
         """
-        if self.dailySpent is None:
-            yesterday = datetime.date(datetime.now()) - timedelta(days=1)
-            self.dailySpent = self.getSpentOnDay(yesterday)
-        return self.dailySpent
+        if self.spentYesterday is None:
+            return self.getSpentOnDay(datetime.date(datetime.now()) - timedelta(days=1))
+        return self.spentYesterday
 
     def getLastPaycheck(self) -> float:
         """Get the last paycheck amount
