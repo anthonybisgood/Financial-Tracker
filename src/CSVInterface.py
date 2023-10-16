@@ -17,13 +17,13 @@ class CSVInterface(object):
         self.yearlySpent = None
         self.yearlyEarned = None
 
-    def addDailySpent(self):
-        amountSpent: float = self.bankInterface.getDailySpent()
+    def addDailySpent(self, date: datetime.date):
+        amountSpent: float = self.bankInterface.getSpentOnDay(date)
         dailyBudget: float = self.bankInterface.getDailyBudget()
         csvWrite: csv = open("./data/data.csv", "a", newline="")
         csvWriter: csv.writer = csv.writer(csvWrite)
         self._writeToCSV(
-            [str(self.yesterdaysDate), str(amountSpent), dailyBudget],
+            [str(date), str(amountSpent), dailyBudget],
             csvWriter,
             csvWrite,
         )
@@ -84,10 +84,9 @@ class CSVInterface(object):
         csvWrite.close()
 
     def _writeToCSV(self, toWrite: list, csvWriter, csvWrite):
-        # csvWrite: csv = open("./data/data.csv", "a", newline="")
         csvWriter: csv.writer = csv.writer(csvWrite)
         csvWriter.writerow(toWrite)
-        # csvWrite.close()
+        csvWrite.close()
 
     # budget for the month or year is money earned + projected earnings
 

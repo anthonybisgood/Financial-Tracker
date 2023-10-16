@@ -3,13 +3,16 @@ from CSVInterface import CSVInterface
 import os
 import smtplib
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class ClientIO(object):
 
     def __init__(self, bankInterface: BankInterface, csvInterface: CSVInterface):
         self.bankInterface: BankInterface = bankInterface
         self.csvInterface: CSVInterface = csvInterface
+        self.yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(
+            days=1
+        )
 
     def percentOfWeeklyBudgetSpent(self) -> float:
         weeklyBudget: float = self.csvInterface.getWeeklyEarned()
@@ -24,7 +27,7 @@ class ClientIO(object):
         return round(self.csvInterface.getYearlySpent() / yearlyBudget * 100, 2)
 
     def _genericMessage(self) -> str:
-        res = "\nSpent yesterday: ${}".format(str(self.bankInterface.getDailySpent()))
+        res = "\nSpent yesterday: ${}".format(str(self.bankInterface.getSpentYesterday()))
         res += "\nPercent of weekly budget spent:\n{}%".format(
             str(self.percentOfWeeklyBudgetSpent())
         )
