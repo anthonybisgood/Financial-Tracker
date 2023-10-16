@@ -13,7 +13,7 @@ from MintConnection import MintConnection
 def __main__():
     mintConn = MintConnection()
     mintConn.startMintConn()
-    bankInterface = BankInterface(mintConn) 
+    bankInterface = BankInterface(mintConn)
     csvInterface = CSVInterface(bankInterface)
     csvInterface.addDailySpent()
     mintConn.closeMintConn()

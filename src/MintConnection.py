@@ -16,8 +16,10 @@ class MintConnection(object):
         mint = mintapi.Mint(
             username,
             password,
+            intuit_account = username,
             mfa_method="email",
             headless = True,
+            driver = False,
             fail_if_stale=True,
             wait_for_sync=False,
             wait_for_sync_timeout=500,
