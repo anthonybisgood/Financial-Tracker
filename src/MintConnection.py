@@ -18,7 +18,7 @@ class MintConnection(object):
             password,
             intuit_account = username,
             mfa_method="email",
-            headless = False,
+            headless = True,
             driver = None,
             fail_if_stale=False,
             wait_for_sync=False,
