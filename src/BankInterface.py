@@ -3,7 +3,7 @@ import pandas as pd
 from dotenv import load_dotenv
 import MintConnection
 
-PAYCHECK_ALLOCATED_TO_EXPENSES = 2 / 3
+PAYCHECK_ALLOCATED_TO_EXPENSES = (2 / 3)
 TIME_BETWEEN_PAYCHECKS = 14
 
 
@@ -13,7 +13,6 @@ class BankInterface(object):
         self.mint = mint
         self.mintConn = self.mint.getMintConn()
         self.accounts = self._getAccountData()
-        self.tr_df = None
         self.spentYesterday = None
         self.getSpentYesterday()
         self.lastPaycheck = None
@@ -41,7 +40,7 @@ class BankInterface(object):
 
     def getDailyBudget(self) -> float:
         allocatedExpenses = round(
-            self.lastPaycheck * (PAYCHECK_ALLOCATED_TO_EXPENSES), 2
+            (self.lastPaycheck * (PAYCHECK_ALLOCATED_TO_EXPENSES))-100, 2
         )
         dailyBudget = round(allocatedExpenses / TIME_BETWEEN_PAYCHECKS, 2)
         return dailyBudget
@@ -109,11 +108,9 @@ class BankInterface(object):
         return ad_df
 
     def _get_account_transactions(self, account_id) -> pd.DataFrame:
-        if self.tr_df is None:
-            self.tr_df = pd.DataFrame(
-                self.mintConn.get_transaction_data(remove_pending=False)
-            )
-        account_transactions: pd.DataFrame = self.tr_df.loc[
-            self.tr_df["accountId"] == account_id
+        """Returns a dataframe of the transactions for a given account"""
+        tr_df = pd.DataFrame(self.mintConn.get_transaction_data(remove_pending=False))
+        account_transactions: pd.DataFrame = tr_df.loc[
+            tr_df["accountId"] == account_id
         ]
         return account_transactions

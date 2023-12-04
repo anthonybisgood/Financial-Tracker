@@ -1,8 +1,12 @@
-Dockerize
+Add in/out going transactions
+    credit card payments dont count
 
-add help to send back to client
+automatic Daily messages
+    add to server
 
-ssh -i /home/anthony/Fin-Tracker.pem ec2-user@ec2-34-219-66-7.us-west-2.compute.amazonaws.com
+    
+add to sql lite to record transactions
+    for posted vs/paid for accurate daily summary
+    have both posted and paid date for credit transactions
 
-scp -i  C:\Users\abisg\.ssh\Fin-Tracker.pem ./src  ec2-54-201-122-21.us-west-2.compute.amazonaws.com:/home/ec2-user/app/FinTracker
-
+    

@@ -4,6 +4,7 @@ from ClientIO import ClientIO
 from MintConnection import MintConnection
 from datetime import datetime, timedelta
 from ValidateData import ValidateData
+
 # TODO: set up EC2 instance
 # TODO: set up cron job to run this script every day
 
@@ -15,14 +16,13 @@ def __main__():
     mintConn.startMintConn()
     bankInterface = BankInterface(mintConn)
     csvInterface = CSVInterface(bankInterface)
-    # validateData = ValidateData(bankInterface, csvInterface)
-    # validateData.getTransactions()
-    csvInterface = CSVInterface(bankInterface)
-    yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(days=1)
-    csvInterface.addDailySpent(yesterdaysDate)
-    mintConn.closeMintConn()
-    clientIo = ClientIO(bankInterface, csvInterface)
-    clientIo.sendText()
+    validateData = ValidateData(bankInterface, csvInterface)
+    validateData.getTransactions()
+    # yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(days=1)
+    # csvInterface.addDailySpent(yesterdaysDate)
+    # mintConn.closeMintConn()
+    # clientIo = ClientIO(bankInterface, csvInterface)
+    # clientIo.sendText()
 
 
 if __name__ == __main__():

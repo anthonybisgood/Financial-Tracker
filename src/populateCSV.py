@@ -7,7 +7,10 @@ from datetime import datetime, timedelta
 
 with open("./data/data.csv", "r") as csv:
     data = csv.readlines()
-    lastRow = data[-1]
+    lastRow = "\n"
+    while lastRow == "\n":
+        data.pop()
+        lastRow = data[-1]
     csv.close()
 date = lastRow.split(",")[0]
 start_date = datetime.strptime(date, "%Y-%m-%d").date() + timedelta(days=1)
