@@ -8,5 +8,5 @@ automatic Daily messages
 add to sql lite to record transactions
     for posted vs/paid for accurate daily summary
     have both posted and paid date for credit transactions
-
-    
+    1. Transactions must be logged at 11:59 pm in case of pending transactions that may get posted after 12am and before the program runs
+    1. if transaction is pending and the date is 
