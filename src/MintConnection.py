@@ -2,6 +2,7 @@ import mintapi
 import os
 from dotenv import load_dotenv
 
+
 class MintConnection(object):
     def __init__(self):
         load_dotenv()
@@ -12,14 +13,14 @@ class MintConnection(object):
         password = os.getenv("MINT_PASS")
         imap_account = os.getenv("IMAP_ACCOUNT")
         imap_password = os.getenv("EMAIL_PASS")
-        
+
         mint = mintapi.Mint(
             username,
             password,
-            intuit_account = username,
+            intuit_account=username,
             mfa_method="email",
-            headless = True,
-            driver = None,
+            headless=False,
+            driver=None,
             fail_if_stale=False,
             wait_for_sync=False,
             wait_for_sync_timeout=500,
@@ -31,7 +32,7 @@ class MintConnection(object):
         mint.rest_client
         self.mint = mint
         return mint
-    
+
     def getMintConn(self) -> mintapi.Mint:
         return self.mint
 

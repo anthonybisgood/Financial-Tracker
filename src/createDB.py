@@ -19,12 +19,14 @@ def tableExists(tableName: str) -> bool:
         return True
     return False
 
+
 cursor = conn.cursor()
 create_transactions_table = """CREATE TABLE TRANSACTIONS (id int PRIMARY KEY, date date, amount DECIMAL(19, 4), description varchar(255), accountID int);"""
 create_accounts_table = (
     """CREATE TABLE ACCOUNTS (id int PRIMARY KEY, bankAccountType varchar(255));"""
 )
-create_pending_transactions_table = """CREATE TABLE PENDING_TRANSACTIONS (id int PRIMARY KEY, date date, amount DECIMAL(19, 4));"""
+create_pending_transactions_table = """CREATE TABLE PENDING_TRANSACTIONS (id int PRIMARY KEY,date date, amount DECIMAL(19, 4));"""
+# cursor.execute("DELETE FROM PENDING_TRANSACTIONS")
 if not tableExists("TRANSACTIONS"):
     cursor.execute(create_transactions_table)
 if not tableExists("ACCOUNTS"):

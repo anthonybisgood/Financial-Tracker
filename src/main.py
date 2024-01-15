@@ -18,6 +18,7 @@ def __main__():
     csvInterface = CSVInterface(bankInterface)
     validateData = ValidateData(bankInterface, csvInterface)
     validateData.getTransactions()
+    
     # yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(days=1)
     # csvInterface.addDailySpent(yesterdaysDate)
     # mintConn.closeMintConn()

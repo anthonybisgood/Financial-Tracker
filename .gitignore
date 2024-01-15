@@ -8,3 +8,6 @@ src/__pycache__/*
 *.ppk
 *.exe
 connection.txt
+credit_transactions.csv
+transactions.db
+
