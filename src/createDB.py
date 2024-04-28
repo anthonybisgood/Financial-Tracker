@@ -1,7 +1,8 @@
+# ERD: https://lucid.app/lucidchart/2fa548f9-1e73-48d5-bfa3-2e7f4907889f/edit?invitationId=inv_52e43567-b463-4274-8d68-6c7205cf3ea5&page=0_0#
 import sqlite3
 
 try:
-    conn = sqlite3.connect("./data/transactions.db")
+    conn = sqlite3.connect("./data/budget.db")
     print("Opened database successfully")
 except:
     print("Error opening database")
@@ -21,12 +22,10 @@ def tableExists(tableName: str) -> bool:
 
 
 cursor = conn.cursor()
-create_transactions_table = """CREATE TABLE TRANSACTIONS (id int PRIMARY KEY, date date, amount DECIMAL(19, 4), description varchar(255), accountID int);"""
-create_accounts_table = (
-    """CREATE TABLE ACCOUNTS (id int PRIMARY KEY, bankAccountType varchar(255));"""
-)
+create_transactions_table = """CREATE TABLE TRANSACTIONS (transactionID varchar(255) PRIMARY KEY, date date, amount DECIMAL(19, 4), payee varchar(255), accountID varchar(255));"""
+create_accounts_table = """CREATE TABLE ACCOUNTS (accountID varchar(255) PRIMARY KEY, accountType varchar(255), accountName varchar(255));"""
 create_pending_transactions_table = """CREATE TABLE PENDING_TRANSACTIONS (id int PRIMARY KEY,date date, amount DECIMAL(19, 4));"""
-# cursor.execute("DELETE FROM PENDING_TRANSACTIONS")
+
 if not tableExists("TRANSACTIONS"):
     cursor.execute(create_transactions_table)
 if not tableExists("ACCOUNTS"):

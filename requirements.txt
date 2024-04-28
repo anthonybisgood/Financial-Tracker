@@ -1,4 +1,1 @@
-mintapi
-python-dotenv
-selenium
-selenium-requests
+npm install sqlite3

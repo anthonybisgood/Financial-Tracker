@@ -6,10 +6,6 @@ from BankInterface import BankInterface
 import pandas as pd
 import sqlite3
 
-mintConn = MintConnection()
-mintConn.startMintConn()
-bankInterface = BankInterface(mintConn)
-
 def getTodaysTransactions() -> pd.DataFrame:
     accounts = bankInterface._getCreditAccounts()
     transactions = pd.DataFrame()
