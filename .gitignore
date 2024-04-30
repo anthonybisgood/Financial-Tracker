@@ -7,3 +7,7 @@ src/__pycache__/*
 *.pem
 *.ppk
 *.exe
+connection.txt
+credit_transactions.csv
+transactions.db
+

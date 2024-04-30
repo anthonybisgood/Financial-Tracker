@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "sqlite3": "^5.1.7",
+    "ynab": "^2.2.0"
+  }
+}
