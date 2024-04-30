@@ -1,5 +1,4 @@
 from BankInterface import BankInterface
-from CSVInterface import CSVInterface
 import os
 import smtplib
 from dotenv import load_dotenv

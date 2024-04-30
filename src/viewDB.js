@@ -25,7 +25,13 @@ function selectTransactions() {
       console.error(err.message);
     }
     rows.forEach((row) => {
-      console.log(row.transactionID, row.accountID, row.date, row.payee, row.amount);
+      console.log(
+        row.transactionID,
+        row.accountID,
+        row.date,
+        row.payee,
+        row.amount
+      );
     });
   });
 }
