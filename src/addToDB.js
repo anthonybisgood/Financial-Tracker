@@ -9,6 +9,7 @@ const today = new Date();
 const todyasDate =
   today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
 
+
 const db = new sqlite3.Database("./data/budget.db", (err) => {
   if (err) {
     console.error(err.message);
@@ -84,6 +85,9 @@ async function postTransactionsToDB(budgetId) {
   const accountIDs = await getAccountIDs("creditCard");
   for (let accountID of accountIDs) {
     const transactions = await getTransactions(budgetId, accountID);
+    if (!transactions) {
+      continue;
+    }
     for (let transaction of transactions) {
       addTransactionToDB(accountID, transaction);
     }
@@ -108,7 +112,7 @@ async function addTransactionToDB(accountID, transaction) {
   const payee = transaction.payee_name;
   db.run(
     `INSERT OR IGNORE INTO TRANSACTIONS(transactionID, accountID, date, payee, amount) VALUES(?, ?, ?, ?, ?)`,
-    [transactionID, accountID, date, payee, -(amount/1000)],
+    [transactionID, accountID, date, payee, -(amount / 1000)],
     (err) => {
       if (err) {
         console.error(err.message);
@@ -120,7 +124,6 @@ async function addTransactionToDB(accountID, transaction) {
 async function main() {
   const budgetId = await getBudgetID();
   const accountsMap = await getAccounts(budgetId);
-
   addAccountsToDB(accountsMap);
   await postTransactionsToDB(budgetId);
   closeDB();
