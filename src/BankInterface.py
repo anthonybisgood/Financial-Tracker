@@ -44,7 +44,7 @@ class BankInterface(object):
         dailyBudget = round(allocatedExpenses / TIME_BETWEEN_PAYCHECKS, 2)
         return dailyBudget
 
-    def getSpentOnDay(self, date: datetime, accountID: str):
+    def getSpentOnDay(self, date: datetime, accounts: list[str]) -> float:
         """returns the amount spent on a given day
 
         Args:
@@ -52,14 +52,21 @@ class BankInterface(object):
 
         Returns:
             float: amount spent on the given day
+            
         """
-        self.cursor.execute(
-            "SELECT SUM(amount) FROM TRANSACTIONS WHERE date = ? and accountID = ?", (date, accountID,)
-        )
-        spent = self.cursor.fetchone()[0]
-        print(spent)
-        # return self.cursor.fetchone()[0]
-
+        total = 0
+        for account in accounts:
+            self.cursor.execute(
+                "SELECT SUM(amount) FROM TRANSACTIONS WHERE date = ? and accountID = ?",
+                (date, account,)
+            )
+            spent = self.cursor.fetchone()[0]
+            if spent is not None:
+                total += spent
+        if total is None:
+            return 0
+        return total
+            
     def _get_last_paycheck(self) -> float:
         checkings_account_ids = self._getAccountIDs("checking")
         last_paycheck = -1
