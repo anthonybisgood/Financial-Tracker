@@ -12,10 +12,6 @@ class BankInterface(object):
     def __init__(self, cursor: sqlite3.Cursor):
         # create link to bank account and login, get account info
         self.cursor = cursor
-        # self.spentYesterday = None
-        # self.getSpentYesterday()
-        # self.lastPaycheck = None
-        # self.getLastPaycheck()
 
     def getSpentYesterday(self) -> float:
         """returns the amount spent yesterday
@@ -23,19 +19,19 @@ class BankInterface(object):
         Returns:
             float: amount spent yesterday
         """
-        if self.spentYesterday is None:
-            return self.getSpentOnDay(datetime.date(datetime.now()) - timedelta(days=1))
-        return self.spentYesterday
-
+        return self.getSpentOnDay(datetime.date(datetime.now()) - timedelta(days=1))
+        
     def getLastPaycheck(self) -> float:
         """Get the last paycheck amount
 
         Returns:
             float: last paycheck amount
         """
-        if self.lastPaycheck is None:
-            self.lastPaycheck = self._get_last_paycheck()
-        return self.lastPaycheck
+        last_paycheck = self.cursor.execute(
+            "SELECT MAX(date) FROM TRANSACTIONS WHERE payee like '%Payment Thank You-Mobile%'"
+        )
+        
+        return last_paycheck
 
     def getDailyBudget(self) -> float:
         allocatedExpenses = round(
@@ -57,8 +53,11 @@ class BankInterface(object):
         total = 0
         for account in accounts:
             self.cursor.execute(
-                "SELECT SUM(amount) FROM TRANSACTIONS WHERE date = ? and accountID = ?",
-                (date, account,)
+                "SELECT SUM(amount) FROM TRANSACTIONS WHERE date = ? and accountID = ? and payee not like '%Payment Thank You-Mobile%'",
+                (
+                    date,
+                    account,
+                ),
             )
             spent = self.cursor.fetchone()[0]
             if spent is not None:
@@ -66,7 +65,7 @@ class BankInterface(object):
         if total is None:
             return 0
         return total
-            
+
     def _get_last_paycheck(self) -> float:
         checkings_account_ids = self._getAccountIDs("checking")
         last_paycheck = -1
@@ -100,3 +99,9 @@ class BankInterface(object):
     def _get_account_transactions(self, account_id) -> pd.DataFrame:
         """Returns a dataframe of the transactions for a given account"""
         pass
+    
+    def getEarnedBetween(startDate: datetime, endDate: datetime) -> float:
+        
+        pass
+        
+

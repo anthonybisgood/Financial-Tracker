@@ -81,7 +81,9 @@ async function getAccountIDs(accountType) {
 
 async function postTransactionsToDB(budgetId) {
   const accountIDs = await getAccountIDs("creditCard");
-  for (let accountID of accountIDs) {
+  accountIDs.push(...(await getAccountIDs("checking")));
+  accountIDs.push(...(await getAccountIDs("savings")));
+  for (let accountID of accountIDs) { 
     const transactions = await getTransactions(budgetId, accountID);
     if (!transactions) {
       continue;

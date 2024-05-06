@@ -6,9 +6,8 @@ from datetime import datetime, timedelta
 
 class ClientIO(object):
 
-    def __init__(self, bankInterface: BankInterface, csvInterface: CSVInterface):
+    def __init__(self, bankInterface: BankInterface):
         self.bankInterface: BankInterface = bankInterface
-        self.csvInterface: CSVInterface = csvInterface
         self.yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(
             days=1
         )
