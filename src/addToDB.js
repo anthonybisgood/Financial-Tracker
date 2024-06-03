@@ -112,7 +112,7 @@ async function addTransactionToDB(accountID, transaction) {
   const payee = transaction.payee_name;
   db.run(
     `INSERT OR IGNORE INTO TRANSACTIONS(transactionID, accountID, date, payee, amount) VALUES(?, ?, ?, ?, ?)`,
-    [transactionID, accountID, date, payee, -(amount / 1000)],
+    [transactionID, accountID, date, payee, (amount / 1000)],
     (err) => {
       if (err) {
         console.error(err.message);

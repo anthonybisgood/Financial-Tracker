@@ -1,7 +1,7 @@
 from BankInterface import BankInterface
 import os
 import smtplib
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
 class ClientIO(object):
@@ -11,18 +11,52 @@ class ClientIO(object):
         self.yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(
             days=1
         )
+        # self.dailyBudget = self.bankInterface.getDailyBudget()
 
     def percentOfWeeklyBudgetSpent(self) -> float:
-        weeklyBudget: float = self.csvInterface.getWeeklyEarned()
-        return round(self.csvInterface.getWeeklySpent() / weeklyBudget * 100, 2)
-
+        today = datetime.date(datetime.now())
+        start = today - timedelta(days=today.weekday()) - timedelta(days=1)
+        end = start + timedelta(days=6)
+        dailyBudget = self.bankInterface.getProjectedBudget(start, end)
+        weeklyBudget = dailyBudget * 7
+        spent = -self.bankInterface.getSpentBetween(self.bankInterface._getAccountIDs("creditCard"), start, end)
+        return round(spent / weeklyBudget * 100, 2)
+        
     def percentOfMonthlyBudgetSpent(self) -> float:
-        monthlyBudget: float = self.csvInterface.getMonthlyEarned()
-        return round(self.csvInterface.getMonthlySpent() / monthlyBudget * 100, 2)
+        daysThisMonth = datetime.now().day
+        firstOfThisMonth = datetime.date(datetime.now()) - timedelta(days=daysThisMonth - 1)
+        lastOfThisMonth =  datetime.date(datetime.now()) + timedelta(days=30 - daysThisMonth)
+        budget = self.bankInterface.getProjectedBudget(firstOfThisMonth, lastOfThisMonth)
+        credit_accounts = self.bankInterface._getAccountIDs("creditCard")
+        today  = datetime.date(datetime.now())
+        spent = -self.bankInterface.getSpentBetween(credit_accounts, firstOfThisMonth, today)
+        return round(spent / budget * 100, 2)
 
     def percentOfYearlyBudgetSpent(self) -> float:
-        yearlyBudget: float = self.csvInterface.getYearlyEarned()
-        return round(self.csvInterface.getYearlySpent() / yearlyBudget * 100, 2)
+        beginning_of_year = datetime.date(datetime.now()) - timedelta(days=datetime.now().timetuple().tm_yday - 1)
+        end_of_year = datetime.date(datetime.now()) + timedelta(days=365 - datetime.now().timetuple().tm_yday)
+        print(beginning_of_year, end_of_year)
+        budget = self.bankInterface.getProjectedBudget(beginning_of_year, end_of_year)
+        spent = -self.bankInterface.getSpentBetween(self.bankInterface._getAccountIDs("creditCard"), beginning_of_year, datetime.date(datetime.now()))
+        return round(spent / budget * 100, 2)
+    
+    def getBudget(self, pastTime:int ) -> float:
+        earned: float = self.bankInterface.getEarnedBetween(
+            self.bankInterface._getAccountIDs("checking"),
+            datetime.date(datetime.now()) - timedelta(days=pastTime),
+            datetime.date(datetime.now()) + timedelta(days=2),
+        )
+        spent: float = self.bankInterface.getSpentBetween(
+            self.bankInterface._getAccountIDs("creditCard"),
+            datetime.date(datetime.now()) - timedelta(days=pastTime),
+            datetime.date(datetime.now()) + timedelta(days=2),
+        )
+        utils: float = self.bankInterface.getSpentBetween(
+            self.bankInterface._getAccountIDs("checking"),
+            datetime.date(datetime.now()) - timedelta(days=pastTime),
+            datetime.date(datetime.now()) + timedelta(days=2),
+        )
+        return round(spent / (earned-utils) * 100, 2)
 
     def _genericMessage(self) -> str:
         res = "\nSpent yesterday: ${}".format(str(self.bankInterface.getSpentYesterday()))
@@ -42,9 +76,8 @@ class ClientIO(object):
         )
         res += "\n"
         return res
-    
+
     def getEmailServer(self):
-        load_dotenv()
         email = str(os.getenv("EMAIL"))
         pas = str(os.getenv("EMAIL_PASS"))
         smtp = "smtp.gmail.com"
@@ -53,7 +86,7 @@ class ClientIO(object):
         server.starttls()
         server.login(email, pas)
         return server
-    
+
     def sendText(self):
         phoneNumber = str(os.getenv("PHONE_NUM"))
         email = str(os.getenv("EMAIL"))
