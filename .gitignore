@@ -10,4 +10,6 @@ src/__pycache__/*
 connection.txt
 credit_transactions.csv
 transactions.db
+*.db
+data/*
 
