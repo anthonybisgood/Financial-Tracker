@@ -229,28 +229,6 @@ class BankInterface(object):
         amount -= last_paycheck_amount
         return amount if amount else 0
 
-    def _getMoneyBeforeFirstPaycheck(
-        self, startDate: datetime, first_paycheck_date: datetime
-    ) -> float:
-        """Gets the money earned from the start date to the first paycheck date
-        END DATE MUST BE AFTER STARTDATE, END DATE MUST BE BEFORE OR EQUAL TO A PAYCHECK DATE
-
-        Args:
-            startDate (datetime): date
-            first_paycheck_date (datetime): paycheck date
-
-        Returns:
-            float: _description_
-        """
-        if startDate == first_paycheck_date:
-            return 0.00
-        last_paycheck_date = self.getFirstPaycheckDateBefore(startDate)
-        last_paycheck_amount = self.getEarnedOn(last_paycheck_date)
-        time_between = abs((startDate - first_paycheck_date).days - 1)
-        dailyBudget = (last_paycheck_amount) / TIME_BETWEEN_PAYCHECKS
-        unallocated_budget = dailyBudget * time_between
-        return unallocated_budget
-
     def _exectuteQuery(self, query: str, args: tuple) -> any:
         self.cursor.execute(query, args)
         result = self.cursor.fetchone()

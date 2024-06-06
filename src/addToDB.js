@@ -19,7 +19,9 @@ const db = new sqlite3.Database("./data/budget.db", (err) => {
 async function getBudgetID() {
   const budgetsResponse = await ynabAPI.budgets.getBudgets();
   const budgets = budgetsResponse.data.budgets;
+  print(budgets)
   const budgetId = budgets[0].id;
+  
   return budgetId;
 }
 

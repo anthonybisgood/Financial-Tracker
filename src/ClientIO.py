@@ -35,7 +35,6 @@ class ClientIO(object):
     def percentOfYearlyBudgetSpent(self) -> float:
         beginning_of_year = datetime.date(datetime.now()) - timedelta(days=datetime.now().timetuple().tm_yday - 1)
         end_of_year = datetime.date(datetime.now()) + timedelta(days=365 - datetime.now().timetuple().tm_yday)
-        print(beginning_of_year, end_of_year)
         budget = self.bankInterface.getProjectedBudget(beginning_of_year, end_of_year)
         spent = -self.bankInterface.getSpentBetween(self.bankInterface._getAccountIDs("creditCard"), beginning_of_year, datetime.date(datetime.now()))
         return round(spent / budget * 100, 2)

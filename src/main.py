@@ -11,13 +11,13 @@ import subprocess
 
 
 def __main__():
-    # addToDBFile = "src/addToDB.js"
-    # result = subprocess.run(["node", addToDBFile], capture_output=True)
-    # if result.returncode != 0:
-    #     print("Error running addToDB.js")
-    #     exit(0)
-    # else:
-    #     print("addToDB.js ran successfully")
+    addToDBFile = "src/addToDB.js"
+    result = subprocess.run(["node", addToDBFile], capture_output=True)
+    if result.returncode != 0:
+        print("Error running addToDB.js")
+        exit(0)
+    else:
+        print("addToDB.js ran successfully")
     dbConn = None
     cursor = None
     try:
@@ -26,16 +26,14 @@ def __main__():
         cursor = dbConn.cursor()
     except:
         print("Error opening database")
-        exit(0) 
+        exit(0)
 
     bankInterface = BankInterface(cursor)
     clientIO = ClientIO(bankInterface)
-    # per = clientIO.percentOfMonthlyBudgetSpent()
-    # print(per,"% of weekly budget spent")
-    # weekly = clientIO.percentOfWeeklyBudgetSpent()
-    # print(weekly, "% of weekly budget spent")
-    # percent = clientIO.percentOfMonthlyBudgetSpent()
-    # print(percent, "% of monthly budget spent")
+    weekly = clientIO.percentOfWeeklyBudgetSpent()
+    print(weekly, "% of weekly budget spent")
+    percent = clientIO.percentOfMonthlyBudgetSpent()
+    print(percent, "% of monthly budget spent")
     yearly = clientIO.percentOfYearlyBudgetSpent()
     print(yearly, "% of yearly budget spent")
     dbConn.commit()
