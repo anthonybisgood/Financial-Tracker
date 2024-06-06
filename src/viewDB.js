@@ -36,5 +36,23 @@ function selectTransactions() {
   });
 }
 
-selectTransactions();
+function getCheckingTransactions() {
+  
+  db.all(
+    "SELECT * FROM TRANSACTIONS WHERE accountID = '73af50de-b008-4a45-a7cf-f0240def1ebf' ORDER BY date asc",
+    [],
+    (err, rows) => {
+      if (err) {
+        console.error(err.message);
+      } else
+        rows.forEach((row) => {
+          console.log(row);
+        });
+    }
+  );
+  console.log("Checking Transactions");
+}
+// selectTransactions();
 selectAccounts();
+getCheckingTransactions();
+
