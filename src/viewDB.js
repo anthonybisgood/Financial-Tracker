@@ -52,7 +52,25 @@ function getCheckingTransactions() {
   );
   console.log("Checking Transactions");
 }
+
+function getCreditCardTransactions() {
+    db.all(
+      "SELECT * FROM TRANSACTIONS WHERE AccountID in (SELECT accountID FROM ACCOUNTS WHERE accountType = 'creditCard') ORDER BY date asc",
+      [],
+      (err, rows) => {
+        if (err) {
+          console.error(err.message);
+        } else
+          rows.forEach((row) => {
+            console.log(row);
+          });
+      }
+    );
+    console.log("Credit Card Transactions");
+  
+}
 // selectTransactions();
 selectAccounts();
-getCheckingTransactions();
+getCreditCardTransactions();
+// getCheckingTransactions();
 
