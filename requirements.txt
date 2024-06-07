@@ -1,1 +1,6 @@
-npm install sqlite3
+sqlite3
+dotenv
+subprocess 
+dotenv
+os
+smtplib

@@ -12,4 +12,6 @@ credit_transactions.csv
 transactions.db
 *.db
 data/*
+.vscode
+node_modules
 
