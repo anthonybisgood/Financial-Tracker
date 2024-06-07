@@ -17,7 +17,7 @@ class BankInterface(object):
         """
         accounts: list[str] = self._getAccountIDs("checking")
         accounts.extend(self._getAccountIDs("creditCard"))
-        return self.getSpentOnDay(
+        return -self.getSpentOnDay(
             datetime.date(datetime.now()) - timedelta(days=1), accounts
         )
 

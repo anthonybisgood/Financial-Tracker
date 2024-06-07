@@ -9,7 +9,7 @@ const today = new Date();
 const todyasDate =
   today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
 
-
+main();
 const db = new sqlite3.Database("./data/budget.db", (err) => {
   if (err) {
     console.error(err.message);
@@ -17,11 +17,14 @@ const db = new sqlite3.Database("./data/budget.db", (err) => {
 });
 
 async function getBudgetID() {
-  const budgetsResponse = await ynabAPI.budgets.getBudgets();
-  const budgets = budgetsResponse.data.budgets;
-  const budgetId = budgets[0].id;
-  
-  return budgetId;
+  try {
+    const budgetsResponse = await ynabAPI.budgets.getBudgets();
+    const budgets = budgetsResponse.data.budgets;
+    const budgetId = budgets[0].id;
+    return budgetId;
+  } catch (err) {
+    console.error("Budget error:", err.message);
+  }
 }
 
 /**
@@ -29,14 +32,18 @@ async function getBudgetID() {
  * @returns a map of accountID:[accountType, accountName]
  */
 async function getAccounts(budgetID) {
-  // make delta request to get all accounts
-  const accounts = await ynabAPI.accounts.getAccounts(budgetID);
-  const accountMap = new Map();
-  for (let account of accounts.data.accounts) {
-    const accountType = account.type;
-    accountMap.set(account.id, [accountType, account.name]);
+  try {
+    // make delta request to get all accounts
+    const accounts = await ynabAPI.accounts.getAccounts(budgetID);
+    const accountMap = new Map();
+    for (let account of accounts.data.accounts) {
+      const accountType = account.type;
+      accountMap.set(account.id, [accountType, account.name]);
+    }
+    return accountMap;
+  } catch (err) {
+    console.error("Account error:", err.message);
   }
-  return accountMap;
 }
 
 function addAccountsToDB(accountsMap) {
@@ -81,17 +88,21 @@ async function getAccountIDs(accountType) {
 }
 
 async function postTransactionsToDB(budgetId) {
-  const accountIDs = await getAccountIDs("creditCard");
-  accountIDs.push(...(await getAccountIDs("checking")));
-  accountIDs.push(...(await getAccountIDs("savings")));
-  for (let accountID of accountIDs) { 
-    const transactions = await getTransactions(budgetId, accountID);
-    if (!transactions) {
-      continue;
+  try {
+    const accountIDs = await getAccountIDs("creditCard");
+    accountIDs.push(...(await getAccountIDs("checking")));
+    accountIDs.push(...(await getAccountIDs("savings")));
+    for (let accountID of accountIDs) {
+      const transactions = await getTransactions(budgetId, accountID);
+      if (!transactions) {
+        continue;
+      }
+      for (let transaction of transactions) {
+        addTransactionToDB(accountID, transaction);
+      }
     }
-    for (let transaction of transactions) {
-      addTransactionToDB(accountID, transaction);
-    }
+  } catch (err) {
+    console.error("Error posting transactions to DB:", err.message);
   }
 }
 
@@ -113,7 +124,7 @@ async function addTransactionToDB(accountID, transaction) {
   const payee = transaction.payee_name;
   db.run(
     `INSERT OR IGNORE INTO TRANSACTIONS(transactionID, accountID, date, payee, amount) VALUES(?, ?, ?, ?, ?)`,
-    [transactionID, accountID, date, payee, (amount / 1000)],
+    [transactionID, accountID, date, payee, amount / 1000],
     (err) => {
       if (err) {
         console.error(err.message);
@@ -123,14 +134,16 @@ async function addTransactionToDB(accountID, transaction) {
 }
 
 async function main() {
-  const budgetId = await getBudgetID();
-  const accountsMap = await getAccounts(budgetId);
-  addAccountsToDB(accountsMap);
-  await postTransactionsToDB(budgetId);
-  closeDB();
+  try {
+    const budgetId = await getBudgetID();
+    const accountsMap = await getAccounts(budgetId);
+    addAccountsToDB(accountsMap);
+    await postTransactionsToDB(budgetId);
+    closeDB();
+  } catch (err) {
+    console.error("Error in main:", err.message);
+  }
 }
-
-main();
 
 function closeDB() {
   db.close((err) => {
