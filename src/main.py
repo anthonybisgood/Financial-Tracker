@@ -18,7 +18,7 @@ def __main__():
         exit(0)
     bankInterface = BankInterface(cursor)
     clientIO = ClientIO(bankInterface)
-    # clientIO.sendText()
+    clientIO.sendText()
     dbConn.commit()
     cursor.close()
     dbConn.close()

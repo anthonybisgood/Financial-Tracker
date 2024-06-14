@@ -180,7 +180,6 @@ class BankInterface(object):
         paychecks = self.getPaychecksBetween(startDate, endDate)
         predicted = self._predictPaychecks(endDate)
         total = money_before + paychecks + predicted
-        print("money before", money_before, "paychecks", paychecks, "predicted", predicted)
         return round(total, 2)
 
     def _getMoneyBefore(self, start) -> float:
@@ -197,6 +196,7 @@ class BankInterface(object):
 
     def _predictPaychecks(self, endDate) -> float:
         last_paycheck_date = self.getFirstPaycheckDateBefore(endDate)
+        # difference inclusive is the number of days between the last paycheck and the end date
         difference_inclusive = abs((endDate - last_paycheck_date).days + 1)
         amount = self.getEarnedOn(last_paycheck_date)
         predicted = ((amount) / TIME_BETWEEN_PAYCHECKS) * difference_inclusive

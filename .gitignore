@@ -11,7 +11,6 @@ connection.txt
 credit_transactions.csv
 transactions.db
 *.db
-.vscode
 node_modules
 data/*
 !data/example.db

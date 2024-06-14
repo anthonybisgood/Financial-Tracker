@@ -1,6 +1,3 @@
-sqlite3
 dotenv
-subprocess 
-dotenv
-os
+subprocess
 smtplib

@@ -19,7 +19,7 @@ class ClientIO(object):
         today = datetime.date(datetime.now())
         start = today - timedelta(days=today.weekday()) - timedelta(days=1)
         end = start + timedelta(days=6)
-        dailyBudget = self.bankInterface.getProjectedBudget(start, end)
+        dailyBudget = self.bankInterface.getProjectedBudget(start, end)/14
         weeklyBudget = dailyBudget * 7
         spent = -self.bankInterface.getSpentBetween(
             self.bankInterface._getAccountIDs("creditCard"), start, end
@@ -42,6 +42,7 @@ class ClientIO(object):
         spent = -self.bankInterface.getSpentBetween(
             credit_accounts, firstOfThisMonth, today
         )
+        
         return round(spent / budget * 100, 2)
 
     def percentOfYearlyBudgetSpent(self) -> float:
