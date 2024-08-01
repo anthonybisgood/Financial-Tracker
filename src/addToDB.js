@@ -1,8 +1,12 @@
 // Description: This script adds the accounts from the YNAB API to the database.
 const path = require("path");
 const ynab = require("ynab");
-require("dotenv").config(path.resolve(__dirname, ".env"));
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const accessToken = process.env.YNAB_API_KEY;
+if (!accessToken) {
+  console.error("No access token found.");
+  process.exit(1);
+}
 const ynabAPI = new ynab.API(accessToken);
 const sqlite3 = require("sqlite3").verbose();
 const today = new Date();
@@ -137,6 +141,7 @@ async function main() {
   try {
     const budgetId = await getBudgetID();
     const accountsMap = await getAccounts(budgetId);
+    console.log(accountsMap);
     addAccountsToDB(accountsMap);
     await postTransactionsToDB(budgetId);
     closeDB();

@@ -2,6 +2,7 @@ from BankInterface import BankInterface
 import os
 from dotenv import load_dotenv, dotenv_values
 import smtplib
+
 # from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
@@ -15,11 +16,21 @@ class ClientIO(object):
             days=1
         )
 
+    def getSpentThisWeek(self) -> float:
+        today = datetime.date(datetime.now())
+        start = today - timedelta(days=today.weekday()) - timedelta(days=1)
+        end = start + timedelta(days=6)
+        spent = -self.bankInterface.getSpentBetween(
+            self.bankInterface._getAccountIDs("creditCard"), start, end
+        )
+        return round(spent, 2)
+
     def percentOfWeeklyBudgetSpent(self) -> float:
         today = datetime.date(datetime.now())
         start = today - timedelta(days=today.weekday()) - timedelta(days=1)
         end = start + timedelta(days=6)
-        dailyBudget = self.bankInterface.getProjectedBudget(start, end)/14
+        dailyBudget = self.bankInterface.getProjectedBudget(start, end) / 14
+       
         weeklyBudget = dailyBudget * 7
         spent = -self.bankInterface.getSpentBetween(
             self.bankInterface._getAccountIDs("creditCard"), start, end
@@ -42,7 +53,6 @@ class ClientIO(object):
         spent = -self.bankInterface.getSpentBetween(
             credit_accounts, firstOfThisMonth, today
         )
-        
         return round(spent / budget * 100, 2)
 
     def percentOfYearlyBudgetSpent(self) -> float:
@@ -79,9 +89,7 @@ class ClientIO(object):
         return round(spent / (earned - utils) * 100, 2)
 
     def _genericMessage(self) -> str:
-        res = "\nSpent yesterday: ${}".format(
-            str(self.bankInterface.getSpentYesterday())
-        )
+        res = "\nSpent this Week: ${}".format(str(self.getSpentThisWeek()))
         res += "\nPercent of weekly budget spent:\n{}%".format(
             str(self.percentOfWeeklyBudgetSpent())
         )

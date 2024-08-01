@@ -176,6 +176,7 @@ class BankInterface(object):
         return amount if amount is not None else 0
 
     def getProjectedBudget(self, startDate, endDate) -> float:
+       
         money_before = self._getMoneyBefore(startDate)
         paychecks = self.getPaychecksBetween(startDate, endDate)
         predicted = self._predictPaychecks(endDate)
