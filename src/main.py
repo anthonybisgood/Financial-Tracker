@@ -13,12 +13,13 @@ def __main__():
         dbConn = sqlite3.connect("./data/budget.db")
         print("Opened database successfully")
         cursor = dbConn.cursor()
-    except:
-        print("Error opening database")
+    except Exception as e:
+        print("Error opening database:", e)
         exit(0)
     bankInterface = BankInterface(cursor)
     clientIO = ClientIO(bankInterface)
-    clientIO.sendText()
+    clientIO.percentOfWeeklyBudgetSpent()
+    #clientIO.sendText()
     dbConn.commit()
     cursor.close()
     dbConn.close()
@@ -28,8 +29,9 @@ def initializeDB():
     # if the db doesnt exist, run createDB.py
     if not os.path.exists("./data/budget.db"):
         createDBFile = "src/createDB.py"
-        result = subprocess.run(["python", createDBFile], capture_output=True)
+        result = subprocess.run(["python3", createDBFile], capture_output=True)
         if result.returncode != 0:
+            print(result.stderr.decode("utf-8"))
             print("Error running createDB.py")
             exit(0)
         else:
