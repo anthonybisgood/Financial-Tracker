@@ -27,8 +27,8 @@ def __main__():
 
 def initializeDB():
     # if the db doesnt exist, run createDB.py
-    if not os.path.exists("./data/budget.db"):
-        createDBFile = "src/createDB.py"
+    if not os.path.exists("../data/budget.db"):
+        createDBFile = "createDB.py"
         result = subprocess.run(["python3", createDBFile], capture_output=True)
         if result.returncode != 0:
             print(result.stderr.decode("utf-8"))
@@ -37,7 +37,7 @@ def initializeDB():
         else:
             print("createDB.py ran successfully")
     # add transacaions to the db
-    addToDBFile = "src/addToDB.js"
+    addToDBFile = "addToDB.js"
     result = subprocess.run(["node", addToDBFile], capture_output=True)
     if result.returncode != 0:
         print("Error running addToDB.js")
