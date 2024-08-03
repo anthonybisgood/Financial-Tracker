@@ -2,7 +2,7 @@
 import sqlite3
 
 try:
-    conn = sqlite3.connect("./data/budget.db")
+    conn = sqlite3.connect("../data/budget.db")
     print("Opened database successfully")
 except Exception as e:
     print("Error opening database:", e)
