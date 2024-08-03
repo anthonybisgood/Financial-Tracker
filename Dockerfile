@@ -1,5 +1,5 @@
 # Use a specific version of Python
-FROM python:3.8-slim-buster
+FROM python:3.9-slim-buster
 
 # Install system dependencies and cron
 RUN apt-get update && \
@@ -18,6 +18,8 @@ WORKDIR /app
 
 # Copy requirements.txt before installing dependencies
 COPY requirements.txt /app/
+
+RUN chmod +x src/*
 
 # Install Python dependencies with verbose logging
 RUN pip install --upgrade pip && \

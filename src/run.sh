@@ -1,2 +1,2 @@
 cd "$(dirname "$0")"
-python3 /root/Financial-Tracker/src/main.py >> ../logs/log.txt
+python3 ./main.py >> ../logs/log.txt 2>&1
