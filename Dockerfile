@@ -4,10 +4,17 @@ FROM python:3.9-slim-buster
 # Install system dependencies and cron
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    curl \
     cron \
     git \
     build-essential \
     && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Node.js (version 14.x, you can change the version as needed)
+RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Clone the repository
@@ -24,6 +31,12 @@ RUN chmod +x src/*
 # Install Python dependencies with verbose logging
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
+
+# Install Node.js dependencies
+WORKDIR /app/src
+RUN npm install ynab
+RUN npm install dotenv
+RUN npm install sqlite3
 
 # Add a cron job (assuming you want to run the Python script daily at 7 AM)
 COPY crontab /etc/cron.d/my-cron-job

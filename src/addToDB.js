@@ -14,7 +14,7 @@ const todyasDate =
   today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
 
 main();
-const db = new sqlite3.Database("./data/budget.db", (err) => {
+const db = new sqlite3.Database("../data/budget.db", (err) => {
   if (err) {
     console.error(err.message);
   }
