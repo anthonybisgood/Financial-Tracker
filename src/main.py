@@ -10,7 +10,7 @@ def __main__():
     dbConn = None
     cursor = None
     try:
-        dbConn = sqlite3.connect("./data/budget.db")
+        dbConn = sqlite3.connect("../data/budget.db")
         print("Opened database successfully")
         cursor = dbConn.cursor()
     except Exception as e:
@@ -19,7 +19,7 @@ def __main__():
     bankInterface = BankInterface(cursor)
     clientIO = ClientIO(bankInterface)
     clientIO.percentOfWeeklyBudgetSpent()
-    #clientIO.sendText()
+    clientIO.sendText()
     dbConn.commit()
     cursor.close()
     dbConn.close()
