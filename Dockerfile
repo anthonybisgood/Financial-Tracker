@@ -1,6 +1,10 @@
 # Use a specific version of Python
 FROM python:3.9-slim-buster
 
+#Set Timezone
+ENV TZ=America/Mountain
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
 # Install system dependencies and cron
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -25,6 +29,7 @@ WORKDIR /app
 
 # Copy requirements.txt before installing dependencies
 COPY requirements.txt /app/
+COPY .env /app/
 
 RUN chmod +x src/*
 
