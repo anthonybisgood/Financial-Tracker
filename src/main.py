@@ -3,9 +3,11 @@ from ClientIO import ClientIO
 import sqlite3
 import subprocess
 import os
+import datetime
 
 
 def __main__():
+    print(datetime.datetime.now())
     initializeDB()
     dbConn = None
     cursor = None

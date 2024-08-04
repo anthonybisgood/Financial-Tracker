@@ -2,7 +2,7 @@
 FROM python:3.9-slim-buster
 
 #Set Timezone
-ENV TZ="US/Mountain"
+ENV TZ=US/Arizona
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install system dependencies and cron
@@ -11,6 +11,7 @@ RUN apt-get update && \
     curl \
     cron \
     git \
+    vim \
     build-essential \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -44,7 +45,7 @@ RUN npm install dotenv
 RUN npm install sqlite3
 
 # Add a cron job (assuming you want to run the Python script daily at 7 AM)
-COPY crontab /etc/cron.d/my-cron-job
+COPY /src/crontab /etc/cron.d/my-cron-job
 
 # Give execution rights on the cron job
 RUN chmod 0644 /etc/cron.d/my-cron-job
