@@ -7,6 +7,7 @@ RUN apt-get update && \
     curl \
     cron \
     git \
+    vim \
     build-essential \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -22,6 +23,9 @@ RUN git clone https://github.com/anthonybisgood/Financial-Tracker.git /app
 
 # Set the working directory
 WORKDIR /app
+COPY .env /app/
+
+RUN git fetch --all && git reset --hard origin/main
 
 # Copy requirements.txt before installing dependencies
 COPY requirements.txt /app/
