@@ -40,3 +40,4 @@ This project is a financial tracking application that integrates with the YNAB A
 1. Why don't I recieve emails about my budget:
    - The EMAIL must have 2FA disabled and an app password generated for the APP_PASS variable.
 2. Budgets info is sent every day at 6am.
+3. Only useable over 1 budget in YNAB. Added debit accounts count as money in and credit accounts as money out.
