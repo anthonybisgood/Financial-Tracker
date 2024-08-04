@@ -16,7 +16,27 @@ This project is a financial tracking application that integrates with the YNAB A
 - Docker
 - An account with YNAB and a valid YNAB API key.
 - A `.env` file in the root directory with the following variables:
-    - EMAIL=your-email@example.com
+
+### Installation
+
+1. **Clone the Repository**
+
+   Clone the project repository from GitHub:
+
+   ```bash
+   git clone https://github.com/anthonybisgood/financial-tracker.git
+
+2. **Set Up Environment Variables**
+    Create a .env file in the root directory and add the following variables:
+    - EMAIL=<your-email@example.com>
     - APP_PASS=your-email-app-password
     - PHONE_NUM=your-phone-number
     - YNAB_API_KEY=your-ynab-api-key
+
+3. **Run with build_run.sh**
+
+### FAQ & Info
+
+1. Why don't I recieve emails about my budget:
+   - The EMAIL must have 2FA disabled and an app password generated for the APP_PASS variable.
+2. Budgets info is sent every day at 6am.
