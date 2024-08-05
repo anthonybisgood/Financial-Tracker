@@ -23,7 +23,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && \
     rm -rf /var/lib/apt/lists/*
 
 # Clone the repository
-RUN git clone https://github.com/anthonybisgood/Financial-Tracker.git /app
+RUN git clone https://github.com/anthonybisgood/Financial-Tracker.git /app && cd /app && git pull
 
 # Set the working directory
 WORKDIR /app
