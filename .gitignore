@@ -1,4 +1,5 @@
 *.env
+.venv/
 LISCENSE.chromedriver
 temp.py
 account_transactions.csv

@@ -1,5 +1,5 @@
 # Use a specific version of Python
-FROM python:3.9-slim-buster
+FROM python:3.11-slim-buster
 
 #Set Timezone
 ENV TZ=US/Arizona
@@ -22,17 +22,20 @@ RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone the repository
-RUN git clone https://github.com/anthonybisgood/Financial-Tracker.git /app && cd /app && git pull
-
 # Set the working directory
 WORKDIR /app
 
 # Copy requirements.txt before installing dependencies
+
+COPY src/ /app/src/
+COPY logs/ /app/logs/
+COPY data/ /app/data/
 COPY requirements.txt /app/
 COPY .env /app/
-
+COPY package-lock.json /app/
+COPY package.json /app/
 RUN chmod +x src/*
+
 
 # Install Python dependencies with verbose logging
 RUN pip install --upgrade pip && \
