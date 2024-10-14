@@ -30,14 +30,14 @@ class ClientIO(object):
         start = today - timedelta(days=today.weekday()) - timedelta(days=1)
         end = start + timedelta(days=6)
         dailyBudget = self.bankInterface.getProjectedBudget(start, end) / 14
-       
+
         weeklyBudget = dailyBudget * 7
         spent = -self.bankInterface.getSpentBetween(
             self.bankInterface._getAccountIDs("creditCard"), start, end
         )
         return round(spent / weeklyBudget * 100, 2)
 
-    def percentOfMonthlyBudgetSpent(self) -> float:
+    def _getEarnedThisMonth(self) -> float:
         daysThisMonth = datetime.now().day
         firstOfThisMonth = datetime.date(datetime.now()) - timedelta(
             days=daysThisMonth - 1
@@ -45,9 +45,17 @@ class ClientIO(object):
         lastOfThisMonth = datetime.date(datetime.now()) + timedelta(
             days=30 - daysThisMonth
         )
-        budget = self.bankInterface.getProjectedBudget(
+        earned = self.bankInterface.getProjectedBudget(
             firstOfThisMonth, lastOfThisMonth
         )
+        return earned
+
+    def percentOfMonthlyBudgetSpent(self) -> float:
+        daysThisMonth = datetime.now().day
+        firstOfThisMonth = datetime.date(datetime.now()) - timedelta(
+            days=daysThisMonth - 1
+        )
+        budget = self._getEarnedThisMonth()
         credit_accounts = self.bankInterface._getAccountIDs("creditCard")
         today = datetime.date(datetime.now())
         spent = -self.bankInterface.getSpentBetween(
@@ -100,7 +108,8 @@ class ClientIO(object):
         return res
 
     def _firstOfTheMonthMessage(self) -> str:
-        res = "Spent this month: ${}".format(str(self.csvInterface.getMonthlyEarned()))
+        earned = self._getEarnedThisMonth()
+        res = "Spent last month: ${}".format(earned)
         res += "\nPercent of yearly budget spent:\n{}%".format(
             str(self.percentOfYearlyBudgetSpent())
         )
@@ -126,6 +135,7 @@ class ClientIO(object):
         server.sendmail(email, sms_gateway, msg=body)
         # if first of month
         if datetime.now().day == 1:
+            print(datetime.now().day)
             body = "\r\n\r\n" + self._firstOfTheMonthMessage()
             server.sendmail(email, sms_gateway, msg=body)
         server.quit()

@@ -10,7 +10,7 @@ if (!accessToken) {
 const ynabAPI = new ynab.API(accessToken);
 const sqlite3 = require("sqlite3").verbose();
 const today = new Date();
-const todyasDate =
+const todaysDate =
   today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
 
 main();
