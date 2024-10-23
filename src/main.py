@@ -14,6 +14,7 @@ def __main__():
         format="[%(asctime)s] %(levelname)s [%(name)s.%(filename)s.%(funcName)s:%(lineno)d] %(message)s",
     )
     logger = logging.getLogger()
+    logger.info("Starting program")
     logger.debug("Starting main.py")
     initializeDB(logger)
     dbConn = None
@@ -42,20 +43,21 @@ def initializeDB(logger):
         result = subprocess.run(["python3", createDBFile], capture_output=True)
         if result.returncode != 0:
             logger.exception(result.stderr.decode("utf-8"))
+            logger.info("Could not create database. Exiting.")
             logger.error("Error running createDB.py")
             exit(0)
         else:
             logger.debug("createDB.py ran successfully")
     # add transactions to the db
-    logger.debug("Adding transactions to the database")
+    logger.info("Adding transactions to the database")
     addToDBFile = "addToDB.js"
     result = subprocess.run(["node", addToDBFile], capture_output=True)
     if result.returncode != 0:
-        logger.error(result.stderr.decode("utf-8"))
+        logger.exception(result.stderr.decode("utf-8"))
         exit(0)
     else:
         logger.debug("addToDB.js ran successfully")
-    logger.debug("Database initialized")
+    logger.info("Database initialized")
 
 
 if __name__ == __main__():
