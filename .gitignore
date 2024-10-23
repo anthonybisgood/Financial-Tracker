@@ -8,11 +8,9 @@ src/__pycache__/*
 *.pem
 *.ppk
 *.exe
-connection.txt
-credit_transactions.csv
-transactions.db
 *.db
 .vscode/
 node_modules/
 data/*
 !data/example.db
+logs/log.log

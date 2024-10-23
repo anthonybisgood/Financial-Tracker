@@ -9,8 +9,9 @@ from datetime import datetime, timedelta
 
 class ClientIO(object):
 
-    def __init__(self, bankInterface: BankInterface):
+    def __init__(self, logger, bankInterface: BankInterface):
         load_dotenv()
+        self.logger = logger
         self.bankInterface: BankInterface = bankInterface
         self.yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(
             days=1
@@ -23,7 +24,9 @@ class ClientIO(object):
         spent = -self.bankInterface.getSpentBetween(
             self.bankInterface._getAccountIDs("creditCard"), start, end
         )
-        return round(spent, 2)
+        spent = round(spent, 2)
+        self.logger.debug("Spent this week: %s", spent)
+        return spent
 
     def percentOfWeeklyBudgetSpent(self) -> float:
         today = datetime.date(datetime.now())
@@ -35,7 +38,9 @@ class ClientIO(object):
         spent = -self.bankInterface.getSpentBetween(
             self.bankInterface._getAccountIDs("creditCard"), start, end
         )
-        return round(spent / weeklyBudget * 100, 2)
+        percent_spent = round(spent / weeklyBudget * 100, 2)
+        self.logger.debug("Percent of weekly budget spent: %s", percent_spent)
+        return percent_spent
 
     def _getEarnedThisMonth(self) -> float:
         daysThisMonth = datetime.now().day
@@ -48,6 +53,7 @@ class ClientIO(object):
         earned = self.bankInterface.getProjectedBudget(
             firstOfThisMonth, lastOfThisMonth
         )
+        self.logger.debug("Earned this month: %s", earned)
         return earned
 
     def percentOfMonthlyBudgetSpent(self) -> float:
@@ -61,7 +67,9 @@ class ClientIO(object):
         spent = -self.bankInterface.getSpentBetween(
             credit_accounts, firstOfThisMonth, today
         )
-        return round(spent / budget * 100, 2)
+        percent_spent = round(spent / budget * 100, 2)
+        self.logger.debug("Percent of budget spent this month: %s", percent_spent)
+        return percent_spent
 
     def percentOfYearlyBudgetSpent(self) -> float:
         beginning_of_year = datetime.date(datetime.now()) - timedelta(
@@ -76,25 +84,35 @@ class ClientIO(object):
             beginning_of_year,
             datetime.date(datetime.now()),
         )
-        return round(spent / budget * 100, 2)
+        percent_spent = round(spent / budget * 100, 2)
+        self.logger.debug("Percent of budget spent this year: %s", percent_spent)
+        return percent_spent
 
-    def getBudget(self, pastTime: int) -> float:
-        earned: float = self.bankInterface.getEarnedBetween(
-            self.bankInterface._getAccountIDs("checking"),
-            datetime.date(datetime.now()) - timedelta(days=pastTime),
-            datetime.date(datetime.now()) + timedelta(days=2),
-        )
-        spent: float = self.bankInterface.getSpentBetween(
-            self.bankInterface._getAccountIDs("creditCard"),
-            datetime.date(datetime.now()) - timedelta(days=pastTime),
-            datetime.date(datetime.now()) + timedelta(days=2),
-        )
-        utils: float = self.bankInterface.getSpentBetween(
-            self.bankInterface._getAccountIDs("checking"),
-            datetime.date(datetime.now()) - timedelta(days=pastTime),
-            datetime.date(datetime.now()) + timedelta(days=2),
-        )
-        return round(spent / (earned - utils) * 100, 2)
+    # def getBudget(self, pastTime: int) -> float:
+    #     """Gets the budget for a given time period between the pastTime and today
+
+    #     Args:
+    #         pastTime (int): _description_
+
+    #     Returns:
+    #         float: _description_
+    #     """
+    #     earned: float = self.bankInterface.getEarnedBetween(
+    #         self.bankInterface._getAccountIDs("checking"),
+    #         datetime.date(datetime.now()) - timedelta(days=pastTime),
+    #         datetime.date(datetime.now()) + timedelta(days=2),
+    #     )
+    #     spent: float = self.bankInterface.getSpentBetween(
+    #         self.bankInterface._getAccountIDs("creditCard"),
+    #         datetime.date(datetime.now()) - timedelta(days=pastTime),
+    #         datetime.date(datetime.now()) + timedelta(days=2),
+    #     )
+    #     utils: float = self.bankInterface.getSpentBetween(
+    #         self.bankInterface._getAccountIDs("checking"),
+    #         datetime.date(datetime.now()) - timedelta(days=pastTime),
+    #         datetime.date(datetime.now()) + timedelta(days=2),
+    #     )
+    #     return round(spent / (earned - utils) * 100, 2)
 
     def _genericMessage(self) -> str:
         res = "\nSpent this Week: ${}".format(str(self.getSpentThisWeek()))
@@ -130,12 +148,18 @@ class ClientIO(object):
         phoneNumber = str(os.getenv("PHONE_NUM"))
         email = str(os.getenv("EMAIL"))
         sms_gateway = phoneNumber + "@vtext.com"
-        server = self.getEmailServer()
+        try:
+            server = self.getEmailServer()
+            self.logger.debug("Logged in to email server successfully")
+        except Exception as e:
+            self.logger.exception("Error logging in to email server: %s", e)
+            return
         body = self._genericMessage()
+        self.logger.info("Sending daily text message")
         server.sendmail(email, sms_gateway, msg=body)
         # if first of month
         if datetime.now().day == 1:
-            print(datetime.now().day)
+            self.logger.info("Sending monthly text message")
             body = "\r\n\r\n" + self._firstOfTheMonthMessage()
             server.sendmail(email, sms_gateway, msg=body)
         server.quit()
