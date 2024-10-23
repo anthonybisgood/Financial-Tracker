@@ -88,32 +88,6 @@ class ClientIO(object):
         self.logger.debug("Percent of budget spent this year: %s", percent_spent)
         return percent_spent
 
-    # def getBudget(self, pastTime: int) -> float:
-    #     """Gets the budget for a given time period between the pastTime and today
-
-    #     Args:
-    #         pastTime (int): _description_
-
-    #     Returns:
-    #         float: _description_
-    #     """
-    #     earned: float = self.bankInterface.getEarnedBetween(
-    #         self.bankInterface._getAccountIDs("checking"),
-    #         datetime.date(datetime.now()) - timedelta(days=pastTime),
-    #         datetime.date(datetime.now()) + timedelta(days=2),
-    #     )
-    #     spent: float = self.bankInterface.getSpentBetween(
-    #         self.bankInterface._getAccountIDs("creditCard"),
-    #         datetime.date(datetime.now()) - timedelta(days=pastTime),
-    #         datetime.date(datetime.now()) + timedelta(days=2),
-    #     )
-    #     utils: float = self.bankInterface.getSpentBetween(
-    #         self.bankInterface._getAccountIDs("checking"),
-    #         datetime.date(datetime.now()) - timedelta(days=pastTime),
-    #         datetime.date(datetime.now()) + timedelta(days=2),
-    #     )
-    #     return round(spent / (earned - utils) * 100, 2)
-
     def _genericMessage(self) -> str:
         res = "\nSpent this Week: ${}".format(str(self.getSpentThisWeek()))
         res += "\nPercent of weekly budget spent:\n{}%".format(

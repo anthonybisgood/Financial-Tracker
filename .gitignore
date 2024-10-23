@@ -1,9 +1,6 @@
 *.env
 .venv/
 LISCENSE.chromedriver
-temp.py
-account_transactions.csv
-transactions.csv
 src/__pycache__/*
 *.pem
 *.ppk
@@ -13,4 +10,4 @@ src/__pycache__/*
 node_modules/
 data/*
 !data/example.db
-logs/log.log
+logs/all.log
