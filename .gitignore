@@ -16,3 +16,4 @@ transactions.db
 node_modules/
 data/*
 !data/example.db
+logs/log.log
