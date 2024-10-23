@@ -5,9 +5,10 @@ TIME_BETWEEN_PAYCHECKS = 14
 
 
 class BankInterface(object):
-    def __init__(self, cursor: sqlite3.Cursor):
+    def __init__(self, logger, cursor: sqlite3.Cursor):
         # create link to bank account and login, get account info
         self.cursor = cursor
+        self.logger = logger
 
     def getSpentYesterday(self) -> float:
         """returns the amount spent yesterday on credit and checking accounts
@@ -17,9 +18,11 @@ class BankInterface(object):
         """
         accounts: list[str] = self._getAccountIDs("checking")
         accounts.extend(self._getAccountIDs("creditCard"))
-        return -self.getSpentOnDay(
+        spentOnDay = -self.getSpentOnDay(
             datetime.date(datetime.now()) - timedelta(days=1), accounts
         )
+        self.logger.debug(f"Spent yesterday: {spentOnDay}")
+        return spentOnDay
 
     def getLastPaycheck(self) -> float:
         """Get the last paycheck amount including if I get a bonus on that day, does not include money taken out for robinhood
@@ -33,6 +36,7 @@ class BankInterface(object):
             (last_paycheck_date,),
         )
         amount = last_paycheck.fetchone()[0]
+        self.logger.debug(f"Last paycheck: {amount}")
         if amount is None:
             return 0
         return amount
@@ -42,6 +46,7 @@ class BankInterface(object):
             "SELECT max(date) FROM transactions WHERE payee like '%PAYROLL%'"
         )
         last_date = last_date.fetchone()[0]
+        self.logger.debug(f"Last paycheck date: {last_date}")
         return last_date
 
     def getFirstPaycheckDateAfter(self, start) -> datetime:
@@ -54,6 +59,7 @@ class BankInterface(object):
         if first_date is None:
             return None
         first_date = datetime.strptime(first_date, "%Y-%m-%d").date()
+        self.logger.debug(f"First paycheck date after {start}: {first_date}")
         return first_date
 
     def getFirstPaycheckDateBefore(self, date: datetime) -> datetime:
@@ -65,6 +71,7 @@ class BankInterface(object):
         if first_date is None:
             return None
         first_date = datetime.strptime(first_date, "%Y-%m-%d").date()
+        self.logger.debug(f"First paycheck date before {date}: {first_date}")
         return first_date
 
     def getDailyBudget(self, end: datetime) -> float:
@@ -72,6 +79,7 @@ class BankInterface(object):
         utils = -self.getSpentBetween(self._getAccountIDs("checking"), start, end)
         earned = self.getEarnedBetween(self._getAccountIDs("checking"), start, end)
         dailyBudget = (earned - utils) / TIME_BETWEEN_PAYCHECKS
+        self.logger.debug(f"Daily budget: {dailyBudget} between {start} and {end}")
         return dailyBudget
 
     def getSpentOnDay(self, date: datetime, accounts: list[str]) -> float:
@@ -98,6 +106,7 @@ class BankInterface(object):
                 total += spent
         if total is None:
             return 0
+        self.logger.debug(f"Spent on {date}: {total}")
         return total
 
     def _getAccountIDs(self, accountType: str) -> list[str]:
@@ -112,6 +121,7 @@ class BankInterface(object):
         self.cursor.execute(
             "SELECT accountID FROM ACCOUNTS WHERE accountType = ?", (accountType,)
         )
+        self.logger.debug(f"Getting account IDs of type {accountType}")
         return [account[0] for account in self.cursor.fetchall()]
 
     def getEarnedOn(self, date: datetime) -> float:
@@ -126,7 +136,9 @@ class BankInterface(object):
         accounts = self._getAccountIDs("checking")
         utils = -self.getSpentBetween(accounts, date, date)
         earned = self.getEarnedBetween(accounts, date, date)
-        return earned - utils
+        res = earned - utils
+        self.logger.debug(f"Earned on {date}: {res}")
+        return res
 
     def getEarnedBetween(
         self, accounts: list[str], startDate: datetime, endDate: datetime
@@ -146,7 +158,10 @@ class BankInterface(object):
         query = f"select sum(amount) from transactions where accountID IN ({placeholders}) and date between ? and ? and amount > 0"
         self.cursor.execute(query, normalized_accounts + (startDate, endDate))
         amount = self.cursor.fetchone()[0]
-        return amount if amount is not None else 0
+        amount = amount if amount is not None else 0
+        amount = round(amount, 2)
+        self.logger.debug(f"Earned between {startDate} and {endDate}: {amount}")
+        return amount
 
     def getSpentBetween(
         self, accounts: list[str], startDate: datetime, endDate: datetime
@@ -173,14 +188,21 @@ class BankInterface(object):
             ),
         )
         amount = self.cursor.fetchone()[0]
-        return amount if amount is not None else 0
+        amount = amount if amount is not None else 0
+        amount = round(amount, 2)
+        self.logger.debug(f"Spent between {startDate} and {endDate}: {amount}")
+        return amount
 
     def getProjectedBudget(self, startDate, endDate) -> float:
         money_before = self._getMoneyBefore(startDate)
         paychecks = self.getPaychecksBetween(startDate, endDate)
         predicted = self._predictPaychecks(endDate)
         total = money_before + paychecks + predicted
-        return round(total, 2)
+        total = round(total, 2)
+        self.logger.debug(
+            f"Projected budget between {startDate} and {endDate}: {total}"
+        )
+        return total
 
     def _getMoneyBefore(self, start) -> float:
         first_paycheck_date = self.getFirstPaycheckDateAfter(start)
@@ -192,7 +214,9 @@ class BankInterface(object):
         time_between = abs((start - first_paycheck_date).days)
         dailyBudget = (first_paycheck_amount) / TIME_BETWEEN_PAYCHECKS
         unallocated_budget = dailyBudget * time_between
-        return round(unallocated_budget, 2)
+        unallocated_budget = round(unallocated_budget, 2)
+        self.logger.debug(f"Money before {start}: {unallocated_budget}")
+        return unallocated_budget
 
     def _predictPaychecks(self, endDate) -> float:
         last_paycheck_date = self.getFirstPaycheckDateBefore(endDate)
@@ -200,7 +224,11 @@ class BankInterface(object):
         difference_inclusive = abs((endDate - last_paycheck_date).days + 1)
         amount = self.getEarnedOn(last_paycheck_date)
         predicted = ((amount) / TIME_BETWEEN_PAYCHECKS) * difference_inclusive
-        return round(predicted, 2)
+        predicted = round(predicted, 2)
+        self.logger.debug(
+            f"Predicted paychecks between {last_paycheck_date} and {endDate}: {predicted}"
+        )
+        return predicted
 
     def getPaychecksBetween(self, startDate, endDate) -> float:
         """Get the sum of all paychecks between two dates, if there's only 1, return 0
@@ -227,9 +255,12 @@ class BankInterface(object):
         )[0]
         last_paycheck_amount = self.getEarnedOn(last_paycheck_date)
         amount -= last_paycheck_amount
-        return amount if amount else 0
+        amount = round(amount, 2) if amount else 0
+        self.logger.debug(f"Paychecks between {startDate} and {endDate}: {amount}")
+        return amount
 
     def _exectuteQuery(self, query: str, args: tuple) -> any:
         self.cursor.execute(query, args)
         result = self.cursor.fetchone()
+        self.logger.debug(f"Query: {query} with args: {args} returned {result}")
         return result

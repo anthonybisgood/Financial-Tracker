@@ -3,13 +3,12 @@ from ClientIO import ClientIO
 import sqlite3
 import subprocess
 import os
-import datetime
 import logging
 
 
 def __main__():
     logging.basicConfig(
-        filename="../logs/log.log",
+        filename="../logs/all.log",
         level=logging.DEBUG,
         format="[%(asctime)s] %(levelname)s [%(name)s.%(filename)s.%(funcName)s:%(lineno)d] %(message)s",
     )
@@ -25,14 +24,20 @@ def __main__():
         cursor = dbConn.cursor()
     except Exception as e:
         logger.exception("Error opening database: %s", e)
+        logger.fatal("Error opening database, exiting", exc_info=True)
         exit(0)
-    bankInterface = BankInterface(cursor)
-    clientIO = ClientIO(bankInterface)
-    clientIO.percentOfWeeklyBudgetSpent()
-    clientIO.sendText()
+    bankInterface = BankInterface(logger, cursor)
+    try:
+        clientIO = ClientIO(logger, bankInterface)
+        clientIO.sendText()
+    except Exception as e:
+        logger.exception("Error sending text message: %s", e)
+        logger.error("Error sending text")
     dbConn.commit()
     cursor.close()
     dbConn.close()
+    logger.debug("Closed database")
+    logger.info("Program finished")
 
 
 def initializeDB(logger):
@@ -42,8 +47,8 @@ def initializeDB(logger):
         createDBFile = "createDB.py"
         result = subprocess.run(["python3", createDBFile], capture_output=True)
         if result.returncode != 0:
-            logger.exception(result.stderr.decode("utf-8"))
             logger.info("Could not create database. Exiting.")
+            logger.exception(result.stderr.decode("utf-8"))
             logger.error("Error running createDB.py")
             exit(0)
         else:
