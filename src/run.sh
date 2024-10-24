@@ -1,2 +1,2 @@
 cd "$(dirname "$0")"
-python3 ./main.py 
+/usr/local/bin/python3 ./main.py 
