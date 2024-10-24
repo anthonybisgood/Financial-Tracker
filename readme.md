@@ -25,12 +25,14 @@ This project is a financial tracking application that integrates with the YNAB A
 
    ```bash
    git clone https://github.com/anthonybisgood/financial-tracker.git
+   ```
 
 2. **Set Up Environment Variables**
 
     Create a .env file in the root directory and add the following variables:
     - EMAIL=<your-email@example.com>
     - APP_PASS=your-email-app-password
+      - <https://support.google.com/accounts/answer/185833?hl=en>
     - PHONE_NUM=your-phone-number
     - YNAB_API_KEY=your-ynab-api-key
 
