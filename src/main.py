@@ -1,3 +1,4 @@
+from typing import Tuple
 from BankInterface import BankInterface
 from ClientIO import ClientIO
 import sqlite3
@@ -16,16 +17,7 @@ def __main__():
     logger.info("Starting program")
     logger.debug("Starting main.py")
     initializeDB(logger)
-    dbConn = None
-    cursor = None
-    try:
-        dbConn = sqlite3.connect("../data/budget.db")
-        logger.debug("Opened database successfully")
-        cursor = dbConn.cursor()
-    except Exception as e:
-        logger.exception("Error opening database: %s", e)
-        logger.fatal("Error opening database, exiting", exc_info=True)
-        exit(0)
+    dbConn, cursor = createDBConn(logger)
     bankInterface = BankInterface(logger, cursor)
     try:
         clientIO = ClientIO(logger, bankInterface)
@@ -38,6 +30,18 @@ def __main__():
     dbConn.close()
     logger.debug("Closed database")
     logger.info("Program finished")
+
+
+def createDBConn(logger) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
+    try:
+        dbConn = sqlite3.connect("../data/budget.db")
+        logger.debug("Opened database successfully")
+        cursor = dbConn.cursor()
+        return dbConn, cursor
+    except Exception as e:
+        logger.exception("Error opening database: %s", e)
+        logger.fatal("Error opening database, exiting", exc_info=True)
+        exit(0)
 
 
 def initializeDB(logger):
@@ -66,5 +70,4 @@ def initializeDB(logger):
 
 
 if __name__ == __main__():
-
     __main__
