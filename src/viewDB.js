@@ -69,5 +69,5 @@ function getCreditCardTransactions() {
 }
 // selectTransactions();
 selectAccounts();
-//getCreditCardTransactions();
+getCreditCardTransactions();
 // getCheckingTransactions();

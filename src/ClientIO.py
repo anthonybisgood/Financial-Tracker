@@ -1,9 +1,8 @@
 from BankInterface import BankInterface
 import os
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 import smtplib
 
-# from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
 
