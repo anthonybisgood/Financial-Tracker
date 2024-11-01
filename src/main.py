@@ -6,8 +6,8 @@ import subprocess
 import os
 import getLogger
 
-DEV_MODE = 1
-SUBSCRIPTIONS = 1
+DEV_MODE = 0
+SUBSCRIPTIONS = 0
 
 logger = getLogger.getLogger()
 
