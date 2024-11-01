@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
-import sqlite3
 
 TIME_BETWEEN_PAYCHECKS = 14
 
 
 class BankInterface(object):
-    def __init__(self, logger, cursor: sqlite3.Cursor):
+    def __init__(self, logger, cursor):
         # create link to bank account and login, get account info
         self.cursor = cursor
         self.logger = logger

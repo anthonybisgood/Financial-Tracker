@@ -1,43 +1,53 @@
+from typing import Tuple
 from BankInterface import BankInterface
 from ClientIO import ClientIO
 import sqlite3
 import subprocess
 import os
-import logging
+import getLogger
+
+DEV_MODE = 0
+SUBSCRIPTIONS = 0
+
+logger = getLogger.getLogger()
 
 
 def __main__():
-    logging.basicConfig(
-        filename="../logs/all.log",
-        level=logging.DEBUG,
-        format="[%(asctime)s] %(levelname)s [%(name)s.%(filename)s.%(funcName)s:%(lineno)d] %(message)s",
-    )
-    logger = logging.getLogger()
     logger.info("Starting program")
     logger.debug("Starting main.py")
     initializeDB(logger)
-    dbConn = None
-    cursor = None
-    try:
-        dbConn = sqlite3.connect("../data/budget.db")
-        logger.debug("Opened database successfully")
-        cursor = dbConn.cursor()
-    except Exception as e:
-        logger.exception("Error opening database: %s", e)
-        logger.fatal("Error opening database, exiting", exc_info=True)
-        exit(0)
+    dbConn, cursor = createDBConn(logger)
     bankInterface = BankInterface(logger, cursor)
-    try:
-        clientIO = ClientIO(logger, bankInterface)
-        clientIO.sendText()
-    except Exception as e:
-        logger.exception("Error sending text message: %s", e)
-        logger.error("Error sending text")
+    clientIO = ClientIO(logger, bankInterface)
+    sendText(clientIO)
     dbConn.commit()
     cursor.close()
     dbConn.close()
     logger.debug("Closed database")
     logger.info("Program finished")
+
+
+def sendText(clientIO: ClientIO):
+    if DEV_MODE:
+        logger.debug("In dev mode, not sending text")
+        return
+    try:
+        clientIO.sendText()
+    except Exception as e:
+        logger.exception("Error sending text message: %s", e)
+        logger.error("Error sending text")
+
+
+def createDBConn(logger) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
+    try:
+        dbConn = sqlite3.connect("../data/budget.db")
+        logger.debug("Opened database successfully")
+        cursor = dbConn.cursor()
+        return dbConn, cursor
+    except Exception as e:
+        logger.exception("Error opening database: %s", e)
+        logger.fatal("Error opening database, exiting", exc_info=True)
+        exit(0)
 
 
 def initializeDB(logger):
@@ -66,5 +76,4 @@ def initializeDB(logger):
 
 
 if __name__ == __main__():
-
     __main__
