@@ -1,6 +1,5 @@
 from BankInterface import BankInterface
 import os
-from dotenv import load_dotenv
 import smtplib
 
 from datetime import datetime, timedelta
@@ -9,8 +8,8 @@ from datetime import datetime, timedelta
 class ClientIO(object):
 
     def __init__(self, logger, bankInterface: BankInterface):
-        load_dotenv()
         self.logger = logger
+        logger.debug("Client object created")
         self.bankInterface: BankInterface = bankInterface
         self.yesterdaysDate: datetime = datetime.date(datetime.now()) - timedelta(
             days=1

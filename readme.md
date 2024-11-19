@@ -1,5 +1,5 @@
 # Financial Tracker
-test
+
 This project is a financial tracking application that integrates with the YNAB API to manage budgets, track spending, and send notifications about budget status via email and text.
 
 ## Features
