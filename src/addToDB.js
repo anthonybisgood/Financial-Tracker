@@ -51,19 +51,28 @@ async function getAccounts(budgetID) {
 }
 
 function addAccountsToDB(accountsMap) {
+  const promises = [];
   for (let [accountID, accountInfo] of accountsMap) {
     const accountType = accountInfo[0];
     const accountName = accountInfo[1];
-    db.run(
-      `INSERT OR IGNORE INTO ACCOUNTS(accountID, accountType, accountName) VALUES(?, ?, ?)`,
-      [accountID, accountType, accountName],
-      (err) => {
-        if (err) {
-          console.error(err.message);
-        }
-      }
+    promises.push(
+      new Promise((resolve, reject) => {
+        db.run(
+          `INSERT OR IGNORE INTO ACCOUNTS(accountID, accountType, accountName) VALUES(?, ?, ?)`,
+          [accountID, accountType, accountName],
+          (err) => {
+            if (err) {
+              console.error(err.message);
+              reject(err);
+            } else {
+              resolve();
+            }
+          }
+        );
+      })
     );
   }
+  return Promise.all(promises); // Ensures all inserts complete
 }
 
 /**
@@ -98,12 +107,11 @@ async function postTransactionsToDB(budgetId) {
     accountIDs.push(...(await getAccountIDs("savings")));
     for (let accountID of accountIDs) {
       const transactions = await getTransactions(budgetId, accountID);
-      if (!transactions) {
-        continue;
-      }
-      for (let transaction of transactions) {
-        addTransactionToDB(accountID, transaction);
-      }
+      if (!transactions) continue;
+      const promises = transactions.map((transaction) =>
+        addTransactionToDB(accountID, transaction)
+      );
+      await Promise.all(promises); // Waits for all transactions to be added
     }
   } catch (err) {
     console.error("Error posting transactions to DB:", err.message);
@@ -121,20 +129,25 @@ async function getTransactions(budgetId, accountID) {
   }
 }
 
-async function addTransactionToDB(accountID, transaction) {
-  const transactionID = transaction.id;
-  const date = transaction.date;
-  const amount = transaction.amount;
-  const payee = transaction.payee_name;
-  db.run(
-    `INSERT OR IGNORE INTO TRANSACTIONS(transactionID, accountID, date, payee, amount) VALUES(?, ?, ?, ?, ?)`,
-    [transactionID, accountID, date, payee, amount / 1000],
-    (err) => {
-      if (err) {
-        console.error(err.message);
+function addTransactionToDB(accountID, transaction) {
+  return new Promise((resolve, reject) => {
+    const transactionID = transaction.id;
+    const date = transaction.date;
+    const amount = transaction.amount;
+    const payee = transaction.payee_name;
+    db.run(
+      `INSERT OR IGNORE INTO TRANSACTIONS(transactionID, accountID, date, payee, amount) VALUES(?, ?, ?, ?, ?)`,
+      [transactionID, accountID, date, payee, amount / 1000],
+      (err) => {
+        if (err) {
+          console.error(err.message);
+          reject(err);
+        } else {
+          resolve();
+        }
       }
-    }
-  );
+    );
+  });
 }
 
 async function main() {
@@ -142,11 +155,13 @@ async function main() {
     const budgetId = await getBudgetID();
     const accountsMap = await getAccounts(budgetId);
     console.log(accountsMap);
-    addAccountsToDB(accountsMap);
-    await postTransactionsToDB(budgetId);
+    await addAccountsToDB(accountsMap); // Wait for all accounts to be added
+    await postTransactionsToDB(budgetId); // Wait for all transactions to be added
     closeDB();
   } catch (err) {
     console.error("Error in main:", err.message);
+  } finally {
+    closeDB();
   }
 }
 
