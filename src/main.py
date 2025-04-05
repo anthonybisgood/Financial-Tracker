@@ -6,7 +6,7 @@ import subprocess
 import os
 import getLogger
 
-DEV_MODE = 1
+DEV_MODE = 0
 SUBSCRIPTIONS = 1
 
 logger = getLogger.getLogger()
@@ -74,6 +74,7 @@ def initializeDB(logger):
     else:
         logger.debug("addToDB.js ran successfully")
     logger.info("Database initialized")
+
 
 if __name__ == __main__():
     __main__
