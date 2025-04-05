@@ -3,7 +3,7 @@ import sqlite3
 import sys
 import os
 
-from src.modules import getLogger
+# from .. import getLogger
 
 MONTHLY_QUERY = """
 WITH TransactionGroups AS (
@@ -101,7 +101,7 @@ JOIN
     Accounts a ON ps.AccountID = a.AccountID;
 """
 
-logger = getLogger.getLogger()
+# logger = getLogger.getLogger()
 
 
 def main():
@@ -109,10 +109,12 @@ def main():
     cursor = dbconn.cursor()
     monthly_subscriptions = get_monthly_subscriptions(cursor)
     get_subscription_total(monthly_subscriptions)
+    yearly_subscriptions = get_yearly_subscriptions(cursor)
+    get_subscription_total(yearly_subscriptions)
 
 
 def get_dbConn():
-    return sqlite3.connect("../data/budget.db")
+    return sqlite3.connect("/app/data/budget.db")
 
 
 def get_monthly_subscriptions(cursor):

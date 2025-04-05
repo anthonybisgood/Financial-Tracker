@@ -31,7 +31,6 @@ class ClientIO(object):
         start = today - timedelta(days=today.weekday()) - timedelta(days=1)
         end = start + timedelta(days=6)
         dailyBudget = self.bankInterface.getProjectedBudget(start, end) / 14
-
         weeklyBudget = dailyBudget * 7
         spent = -self.bankInterface.getSpentBetween(
             self.bankInterface._getAccountIDs("creditCard"), start, end
@@ -95,6 +94,7 @@ class ClientIO(object):
             str(self.percentOfMonthlyBudgetSpent())
         )
         res += "\r\n\r\n\r\n"
+        self.logger.debug("Message: ${}".format(res))
         return res
 
     def _firstOfTheMonthMessage(self) -> str:
@@ -120,18 +120,18 @@ class ClientIO(object):
         phoneNumber = str(os.getenv("PHONE_NUM"))
         email = str(os.getenv("EMAIL"))
         sms_gateway = phoneNumber + "@vtext.com"
+        body = self._genericMessage()
         try:
             server = self.getEmailServer()
             self.logger.debug("Logged in to email server successfully")
+            self.logger.info("Sending daily text message")
+            server.sendmail(email, sms_gateway, msg=body)
+            # if first of month
+            if datetime.now().day == 1:
+                self.logger.info("Sending monthly text message")
+                body = "\r\n\r\n" + self._firstOfTheMonthMessage()
+                server.sendmail(email, sms_gateway, msg=body)
+            server.quit()
         except Exception as e:
             self.logger.exception("Error logging in to email server: %s", e)
             return
-        body = self._genericMessage()
-        self.logger.info("Sending daily text message")
-        server.sendmail(email, sms_gateway, msg=body)
-        # if first of month
-        if datetime.now().day == 1:
-            self.logger.info("Sending monthly text message")
-            body = "\r\n\r\n" + self._firstOfTheMonthMessage()
-            server.sendmail(email, sms_gateway, msg=body)
-        server.quit()
