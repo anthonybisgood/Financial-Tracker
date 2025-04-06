@@ -1,7 +1,8 @@
 from BankInterface import BankInterface
 import os
 import smtplib
-
+from dotenv import load_dotenv
+load_dotenv()
 from datetime import datetime, timedelta
 
 
@@ -113,6 +114,7 @@ class ClientIO(object):
         port = 587
         server = smtplib.SMTP(smtp, port)
         server.starttls()
+        print(email, pas)
         server.login(email, pas)
         return server
 

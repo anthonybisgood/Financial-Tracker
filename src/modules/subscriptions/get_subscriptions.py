@@ -83,7 +83,7 @@ PotentialSubscriptions AS (
         tg.AccountID, tg.payee
     HAVING 
         COUNT(*) >= 2 -- At least two transactions to consider recurring
-        AND avg_interval_days BETWEEN 365 AND 367 -- Adjust for period (monthly here)
+        AND avg_interval_days BETWEEN 365 AND 367 -- Adjust for period (yearly here with ±5 days)
 )
 SELECT 
     ps.AccountID,
@@ -108,6 +108,8 @@ def main():
     dbconn = get_dbConn()
     cursor = dbconn.cursor()
     monthly_subscriptions = get_monthly_subscriptions(cursor)
+    yearly_subscriptions = get_yearly_subscriptions(cursor)
+    get_subscription_total(yearly_subscriptions)
     get_subscription_total(monthly_subscriptions)
     yearly_subscriptions = get_yearly_subscriptions(cursor)
     get_subscription_total(yearly_subscriptions)
