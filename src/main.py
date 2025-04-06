@@ -7,7 +7,7 @@ import os
 import getLogger
 
 DEV_MODE = 0
-SUBSCRIPTIONS = 1
+SUBSCRIPTIONS = 0
 
 logger = getLogger.getLogger()
 
