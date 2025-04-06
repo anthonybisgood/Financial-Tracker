@@ -6,7 +6,7 @@ import subprocess
 import os
 import getLogger
 
-DEV_MODE = 1
+DEV_MODE = 0
 SUBSCRIPTIONS = 1
 
 logger = getLogger.getLogger()
@@ -30,6 +30,7 @@ def __main__():
 def sendText(clientIO: ClientIO):
     if DEV_MODE:
         logger.debug("In dev mode, not sending text")
+        clientIO._genericMessage()
         return
     try:
         clientIO.sendText()
