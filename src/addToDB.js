@@ -157,7 +157,6 @@ async function main() {
     console.log(accountsMap);
     await addAccountsToDB(accountsMap); // Wait for all accounts to be added
     await postTransactionsToDB(budgetId); // Wait for all transactions to be added
-    closeDB();
   } catch (err) {
     console.error("Error in main:", err.message);
   } finally {
