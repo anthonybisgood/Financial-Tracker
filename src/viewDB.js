@@ -52,9 +52,21 @@ function getCheckingTransactions() {
   console.log("Checking Transactions");
 }
 
+function getAppData() {
+  db.all("SELECT * FROM APP_DATA", (err, rows) => {
+    if (err) {
+      console.error(err.message);
+    } else
+      rows.forEach((row) => {
+        console.log(row);
+      });
+  });
+  console.log("App Data");
+}
+
 function getCreditCardTransactions() {
   db.all(
-    "SELECT * FROM TRANSACTIONS WHERE AccountID in (SELECT accountID FROM ACCOUNTS WHERE accountType = 'creditCard') ORDER BY date asc",
+    "SELECT * FROM TRANSACTIONS WHERE AccountID in (SELECT accountID FROM ACCOUNTS WHERE accountType = 'creditCard') ORDER BY date asc;",
     [],
     (err, rows) => {
       if (err) {
@@ -71,3 +83,4 @@ function getCreditCardTransactions() {
 selectAccounts();
 getCreditCardTransactions();
 // getCheckingTransactions();
+getAppData();

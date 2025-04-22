@@ -1,13 +1,8 @@
 # ERD: https://lucid.app/lucidchart/2fa548f9-1e73-48d5-bfa3-2e7f4907889f/edit?invitationId=inv_52e43567-b463-4274-8d68-6c7205cf3ea5&page=0_0#
 import sqlite3
-import logging
+import getLogger
 
-logging.basicConfig(
-    filename="../logs/all.log",
-    level=logging.DEBUG,
-    format="[%(asctime)s] %(levelname)s [%(name)s.%(filename)s.%(funcName)s:%(lineno)d] %(message)s",
-)
-logger = logging.getLogger()
+logger = getLogger.getLogger()
 
 try:
     conn = sqlite3.connect("../data/budget.db")
@@ -33,16 +28,20 @@ cursor = conn.cursor()
 create_transactions_table = """CREATE TABLE TRANSACTIONS (transactionID varchar(255) PRIMARY KEY, date date, amount DECIMAL(19, 4), payee varchar(255), accountID varchar(255));"""
 create_accounts_table = """CREATE TABLE ACCOUNTS (accountID varchar(255) PRIMARY KEY, accountType varchar(255), accountName varchar(255));"""
 create_pending_transactions_table = """CREATE TABLE PENDING_TRANSACTIONS (id int PRIMARY KEY,date date, amount DECIMAL(19, 4));"""
+create_app_table = """CREATE TABLE APP_DATA (id INTEGER PRIMARY KEY AUTOINCREMENT, key varchar(255), value varchar(255));"""
 
-if not tableExists("TRANSACTIONS"):
-    cursor.execute(create_transactions_table)
-    logger.debug("Created TRANSACTIONS table")
-if not tableExists("ACCOUNTS"):
-    cursor.execute(create_accounts_table)
-    logger.debug("Created ACCOUNTS table")
-if not tableExists("PENDING_TRANSACTIONS"):
-    cursor.execute(create_pending_transactions_table)
-    logger.debug("Created PENDING_TRANSACTIONS table")
+
+def create_table(tableName: str, statement: str) -> None:
+    if not tableExists(tableName):
+        cursor.execute(statement)
+        logger.debug(f"Created {tableName} table")
+
+
+create_table("TRANSACTIONS", create_transactions_table)
+create_table("ACCOUNTS", create_accounts_table)
+create_table("PENDING_TRANSACTIONS", create_pending_transactions_table)
+create_table("APP_DATA", create_app_table)
+
 
 conn.commit()
 cursor.close()
