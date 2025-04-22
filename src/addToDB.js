@@ -37,17 +37,13 @@ function getLastServerKnowledge(key) {
 }
 
 function putLastServerKnowledge(key, value) {
-  db.run(
-    `INSERT OR REPLACE INTO APP_DATA(key, value) VALUES(?, ?)`,
-    [key, value],
-    (err) => {
-      if (err) {
-        console.error(err.message);
-      } else {
-        console.log("Last server knowledge updated:", value);
-      }
+  db.run(`UPDATE APP_DATA SET value = ? WHERE key = ?`, [value, key], (err) => {
+    if (err) {
+      console.error(err.message);
+    } else {
+      console.log("Last server knowledge updated:", value);
     }
-  );
+  });
 }
 
 async function getBudgetID() {
@@ -194,7 +190,6 @@ async function main() {
     console.log(accountsMap);
     await addAccountsToDB(accountsMap); // Wait for all accounts to be added
     await postTransactionsToDB(budgetId); // Wait for all transactions to be added
-    sleep(1000);
   } catch (err) {
     console.error("Error in main:", err.message);
   } finally {
