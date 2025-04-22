@@ -28,7 +28,9 @@ cursor = conn.cursor()
 create_transactions_table = """CREATE TABLE TRANSACTIONS (transactionID varchar(255) PRIMARY KEY, date date, amount DECIMAL(19, 4), payee varchar(255), accountID varchar(255));"""
 create_accounts_table = """CREATE TABLE ACCOUNTS (accountID varchar(255) PRIMARY KEY, accountType varchar(255), accountName varchar(255));"""
 create_pending_transactions_table = """CREATE TABLE PENDING_TRANSACTIONS (id int PRIMARY KEY,date date, amount DECIMAL(19, 4));"""
-create_app_table = """CREATE TABLE APP_DATA (key varchar(255), value varchar(255));"""
+create_app_table = (
+    """CREATE TABLE APP_DATA (key varchar(255) PRIMARY KEY, value varchar(255));"""
+)
 
 
 def create_table(tableName: str, statement: str) -> None:
@@ -41,7 +43,6 @@ create_table("TRANSACTIONS", create_transactions_table)
 create_table("ACCOUNTS", create_accounts_table)
 create_table("PENDING_TRANSACTIONS", create_pending_transactions_table)
 create_table("APP_DATA", create_app_table)
-
 
 conn.commit()
 cursor.close()

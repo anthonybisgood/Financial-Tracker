@@ -37,13 +37,18 @@ function getLastServerKnowledge(key) {
 }
 
 function putLastServerKnowledge(key, value) {
-  db.run(`UPDATE APP_DATA SET value = ? WHERE key = ?`, [value, key], (err) => {
-    if (err) {
-      console.error(err.message);
-    } else {
-      console.log("Last server knowledge updated:", value);
+  db.run(
+    `INSERT INTO APP_DATA (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+    [key, value],
+    (err) => {
+      if (err) {
+        console.error(err.message);
+      } else {
+        console.log("Last server knowledge upserted:", value);
+      }
     }
-  });
+  );
 }
 
 async function getBudgetID() {
@@ -169,15 +174,21 @@ function addTransactionToDB(accountID, transaction) {
     const amount = transaction.amount;
     const payee = transaction.payee_name;
     db.run(
-      `INSERT OR IGNORE INTO TRANSACTIONS(transactionID, accountID, date, payee, amount) VALUES(?, ?, ?, ?, ?)`,
+      `INSERT INTO TRANSACTIONS(transactionID, accountID, date, payee, amount) 
+       VALUES(?, ?, ?, ?, ?)
+       ON CONFLICT(transactionID) DO UPDATE SET 
+       accountID = excluded.accountID,
+       date = excluded.date,
+       payee = excluded.payee,
+       amount = excluded.amount`,
       [transactionID, accountID, date, payee, amount / 1000],
       (err) => {
-        if (err) {
-          console.error(err.message);
-          reject(err);
-        } else {
-          resolve();
-        }
+      if (err) {
+        console.error(err.message);
+        reject(err);
+      } else {
+        resolve();
+      }
       }
     );
   });
