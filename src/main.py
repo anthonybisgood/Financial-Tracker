@@ -53,17 +53,16 @@ def createDBConn(logger) -> Tuple[sqlite3.Connection, sqlite3.Cursor]:
 
 def initializeDB(logger):
     # if the db doesn't exist, run createDB.py
-    if not os.path.exists("../data/budget.db"):
-        logger.debug("Initializing database")
-        createDBFile = "createDB.py"
-        result = subprocess.run(["python3", createDBFile], capture_output=True)
-        if result.returncode != 0:
-            logger.info("Could not create database. Exiting.")
-            logger.exception(result.stderr.decode("utf-8"))
-            logger.error("Error running createDB.py")
-            exit(0)
-        else:
-            logger.debug("createDB.py ran successfully")
+    logger.debug("Initializing database")
+    createDBFile = "createDB.py"
+    result = subprocess.run(["python3", createDBFile], capture_output=True)
+    if result.returncode != 0:
+        logger.info("Could not create database. Exiting.")
+        logger.exception(result.stderr.decode("utf-8"))
+        logger.error("Error running createDB.py")
+        exit(0)
+    else:
+        logger.debug("createDB.py ran successfully")
     # add transactions to the db
     logger.info("Adding transactions to the database")
     addToDBFile = "addToDB.js"
