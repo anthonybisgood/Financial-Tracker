@@ -12,6 +12,7 @@ RUN apt-get update && \
     cron \
     git \
     vim \
+    pandas \
     build-essential \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
