@@ -39,7 +39,8 @@ RUN chmod +x src/*
 
 # Install Python dependencies with verbose logging
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir pandas 
 
 # Install Node.js dependencies
 WORKDIR /app/src
